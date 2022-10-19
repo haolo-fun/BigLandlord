@@ -12,7 +12,7 @@
         <module>bigLandlord-core</module>
         <module>bigLandlord-starter</module>
         <module>bigLandlord-db</module>
-        <module>bigLandlord-lend-api</module>
+        <module>bigLandlord-land-api</module>
     </modules>
 
     <properties>

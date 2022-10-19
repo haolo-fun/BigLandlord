@@ -14,6 +14,8 @@ public interface IUserService extends IService<User> {
 
     User getUserByUsername(String username);
 
+    Long getUserIdByUsername(String username);
+
     List<String> getUserPermissionsByUsername(String username);
 
     List<String> getUserPermissionsByUser(User user);

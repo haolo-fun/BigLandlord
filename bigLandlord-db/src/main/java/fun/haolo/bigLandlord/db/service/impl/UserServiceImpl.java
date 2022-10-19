@@ -33,8 +33,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public User getUserByUsername(String username) {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         //通过username查user
-        userQueryWrapper.eq("username",username);
+        userQueryWrapper.eq("username", username);
         return getOne(userQueryWrapper);
+    }
+
+    @Override
+    public Long getUserIdByUsername(String username) {
+        return getUserByUsername(username).getId();
     }
 
     @Override
@@ -46,7 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public List<String> getUserPermissionsByUser(User user) {
         List<String> list = new ArrayList<>();
         QueryWrapper<UserRoleRelation> userRoleRelationQueryWrapper = new QueryWrapper<>();
-        userRoleRelationQueryWrapper.eq("user_id",user.getId());
+        userRoleRelationQueryWrapper.eq("user_id", user.getId());
         for (UserRoleRelation userRoleRelation : userRoleRelationService.list(userRoleRelationQueryWrapper)) {
             Role role = roleService.getById(userRoleRelation.getRoleId());
             list.add(role.getName());

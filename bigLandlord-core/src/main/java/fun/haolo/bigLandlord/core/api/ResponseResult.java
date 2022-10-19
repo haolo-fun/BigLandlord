@@ -28,6 +28,10 @@ public class ResponseResult<T> {
         this.data = data;
     }
 
+    public static <T> ResponseResult<T> success() {
+        return new ResponseResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
+    }
+
     public static <T> ResponseResult<T> success(T data) {
         return new ResponseResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data);
     }

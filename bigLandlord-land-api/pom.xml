@@ -16,4 +16,15 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>fun.haolo</groupId>
+            <artifactId>bigLandlord-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fun.haolo</groupId>
+            <artifactId>bigLandlord-db</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
