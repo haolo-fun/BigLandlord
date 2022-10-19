@@ -53,6 +53,11 @@ public class JwtTokenUtil {
         return generateToken(payload);
     }
 
+    public String getUUIDByToken(String token) {
+        JWT jwt = getJWTFromToken(token);
+        return (String) jwt.getPayload("id");
+    }
+
     /**
      * 从token中获取JWT中的负载
      */

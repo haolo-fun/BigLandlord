@@ -9,14 +9,17 @@ import fun.haolo.bigLandlord.db.entity.User;
 import fun.haolo.bigLandlord.db.service.IUserService;
 import fun.haolo.bigLandlord.db.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author haolo
@@ -38,6 +41,9 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private IUserService iUserService;
 
+    @Value("${jwt.expiration}")
+    private Integer expiration; //单位：秒
+
     private static final Log log = LogFactory.get();
 
     @Override
@@ -46,10 +52,12 @@ public class LoginServiceImpl implements LoginService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
-        SecurityUserDetails userDetails = (SecurityUserDetails) authenticate.getPrincipal();
-        // 用户信息存入redis
-        redisUtil.setCacheObject("login:" + username, userDetails);
-        return jwtTokenUtil.generateToken(userDetails);
+        UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
+        String token = jwtTokenUtil.generateToken(userDetails);
+        // tokenId信息存入redis
+        String uuid = jwtTokenUtil.getUUIDByToken(token);
+        redisUtil.setCacheObject("token:" + uuid, userDetails, expiration, TimeUnit.SECONDS); // 过期时间单位，秒
+        return token;
     }
 
     @Override

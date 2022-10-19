@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @Description redis工具类
  */
 @Component
+@SuppressWarnings(value = {"unchecked", "rawtypes"})
 public class RedisUtil {
 
     @Autowired

@@ -4,12 +4,16 @@ import cn.hutool.jwt.JWT;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.dto.SecurityUserDetails;
+import fun.haolo.bigLandlord.core.exception.TokenLogoutException;
 import fun.haolo.bigLandlord.db.utils.JwtTokenUtil;
 import fun.haolo.bigLandlord.db.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,10 +33,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private static final Log log = LogFactory.get();
 
     @Autowired
+    private UserDetailsService userDetailsService;
+    @Autowired
     private JwtTokenUtil jwtTokenUtil;
     @Autowired
     private RedisUtil redisUtil;
-
     @Value("${jwt.tokenHeader}")
     private String tokenHeader; //token在请求头中的名字
 
@@ -45,10 +50,15 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             if (jwt != null) {
                 String username = (String) jwt.getPayload("username");
                 log.info("checking username:{}", username);
+                // 判断token是否合法
                 if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null && !jwtTokenUtil.isTokenExpired(jwt)) {
-                    // 从redis中获取用户信息
-                    // 如果解析出来的username和redis中的username一致，则继续
-                    SecurityUserDetails userDetails = redisUtil.getCacheObject("login:" + username);
+                    // 通过token中的uuid从redis中判断token是否注销
+                    String uuid = (String) jwt.getPayload("id");
+                    if (Objects.isNull(redisUtil.getCacheObject("token:" + uuid))){
+                        throw new TokenLogoutException("登录已被注销，请重新登录");
+                    }
+                    // 获取userDetails
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     if (!Objects.isNull(userDetails)) {
                         log.info("userDetails:{}", userDetails);
                         // 存入SecurityContextHolder
