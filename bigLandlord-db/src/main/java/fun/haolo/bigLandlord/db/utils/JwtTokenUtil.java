@@ -74,8 +74,9 @@ public class JwtTokenUtil {
      */
     public boolean isTokenExpired(JWT jwt) {
         if (jwt == null) return true;
-        Date expiredDate = (Date) jwt.getPayload("exp");
-        return expiredDate.before(new Date());
+        Integer expiredDate = (Integer) jwt.getPayload("exp");
+        Date date = new Date(expiredDate);
+        return !date.before(new Date());
     }
 
     /**

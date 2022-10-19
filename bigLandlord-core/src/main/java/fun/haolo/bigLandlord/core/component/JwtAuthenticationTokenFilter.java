@@ -48,7 +48,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             //解析token
             JWT jwt = jwtTokenUtil.getJWTFromToken(token);
             if (jwt != null) {
-                String username = (String) jwt.getPayload("username");
+                String username = (String) jwt.getPayload("sub");
                 log.info("checking username:{}", username);
                 // 判断token是否合法
                 if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null && !jwtTokenUtil.isTokenExpired(jwt)) {
