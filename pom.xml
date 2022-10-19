@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>fun.haolo</groupId>
-    <artifactId>bigLandlord</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>bigLandlord-core</module>
         <module>bigLandlord-starter</module>
+        <module>bigLandlord-core</module>
         <module>bigLandlord-db</module>
         <module>bigLandlord-land-api</module>
     </modules>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -27,17 +16,33 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <groupId>fun.haolo</groupId>
+    <artifactId>bigLandlord</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <name>bigLandlord</name>
+    <description>bigLandlord</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>fun.haolo</groupId>
                 <artifactId>bigLandlord-core</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fun.haolo</groupId>
                 <artifactId>bigLandlord-db</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fun.haolo</groupId>
+                <artifactId>bigLandlord-land-api</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
