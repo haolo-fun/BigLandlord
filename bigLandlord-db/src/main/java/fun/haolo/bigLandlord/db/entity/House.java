@@ -31,6 +31,10 @@ public class House implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    @ApiModelProperty("房东id")
+    @TableField("user_id")
+    private Long userId;
+
     @ApiModelProperty("地址")
     @TableField("address")
     private String address;
@@ -49,7 +53,7 @@ public class House implements Serializable {
 
     @ApiModelProperty("房屋状态（空闲->0，已租->1）")
     @TableField("status")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty("当前租客id")
     @TableField("tenant_id")
@@ -78,6 +82,14 @@ public class House implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getAddress() {
@@ -112,11 +124,11 @@ public class House implements Serializable {
         this.price = price;
     }
 
-    public Boolean getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
@@ -163,17 +175,18 @@ public class House implements Serializable {
     @Override
     public String toString() {
         return "House{" +
-            "id = " + id +
-            ", address = " + address +
-            ", area = " + area +
-            ", deposit = " + deposit +
-            ", price = " + price +
-            ", status = " + status +
-            ", tenantId = " + tenantId +
-            ", dueDate = " + dueDate +
-            ", createTime = " + createTime +
-            ", updateTime = " + updateTime +
-            ", deleted = " + deleted +
-        "}";
+                "id=" + id +
+                ", userId=" + userId +
+                ", address='" + address + '\'' +
+                ", area=" + area +
+                ", deposit=" + deposit +
+                ", price=" + price +
+                ", status=" + status +
+                ", tenantId=" + tenantId +
+                ", dueDate=" + dueDate +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", deleted=" + deleted +
+                '}';
     }
 }
