@@ -99,8 +99,8 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
 
     private List<HouseParam> house2VO(List<House> list) {
         List<HouseParam> voList = new ArrayList<>();
-        HouseParam vo = new HouseParam();
         for (House house : list) {
+            HouseParam vo = new HouseParam();
             BeanUtils.copyProperties(house, vo);
             voList.add(vo);
         }

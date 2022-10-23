@@ -22,9 +22,9 @@ public interface ITenantService extends IService<Tenant> {
 
     Tenant updateByVo(TenantParam param, String userName);
 
-    ArrayList<TenantParam> getListToVo(String userName, Integer page, Integer count);
+    ArrayList<TenantParam> getListToVo(String userName, long current, long size);
 
-    ArrayList<TenantParam> getByNameToVo(String name, String userName, Integer page, Integer count);
+    ArrayList<TenantParam> getByNameToVo(String name, String userName, long current, long size);
 
     String getNameById(Long id);
 

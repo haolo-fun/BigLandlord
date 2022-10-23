@@ -58,23 +58,23 @@ public class TenantController {
         return tenant != null ? ResponseResult.success(tenant) : ResponseResult.failed();
     }
 
-    @GetMapping("/get/{page}/{count}")
+    @GetMapping("/get/{current}/{size}")
     @ApiOperation(value = "查询所有租户信息")
-    public ResponseResult<ArrayList<TenantParam>> selectAll(@PathVariable Integer page, @PathVariable Integer count) {
+    public ResponseResult<ArrayList<TenantParam>> selectAll(@PathVariable long current, @PathVariable long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
 
-        ArrayList<TenantParam> list = tenantService.getListToVo(username, page, count);
+        ArrayList<TenantParam> list = tenantService.getListToVo(username,  current,  size);
         return ResponseResult.success(list);
     }
 
-    @GetMapping({"/get/{name}/{page}/{count}"})
+    @GetMapping({"/get/{name}/{current}/{size}"})
     @ApiOperation(value = "通过租户姓名查询信息")
-    public ResponseResult<ArrayList<TenantParam>> selectAll(@PathVariable String name, @PathVariable Integer page, @PathVariable Integer count) {
+    public ResponseResult<ArrayList<TenantParam>> selectAll(@PathVariable String name,@PathVariable long current, @PathVariable long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
 
-        ArrayList<TenantParam> list = tenantService.getByNameToVo(name, username, page, count);
+        ArrayList<TenantParam> list = tenantService.getByNameToVo(name, username, current, size);
         return ResponseResult.success(list);
     }
 }

@@ -23,7 +23,7 @@ import java.util.List;
  * @author haolo
  * @since 2022-10-18
  */
-@Controller
+@RestController
 @Api(tags = "land_房源控制接口")
 @RequestMapping("/house")
 public class HouseController {

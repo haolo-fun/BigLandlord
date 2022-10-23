@@ -57,18 +57,18 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     }
 
     @Override
-    public ArrayList<TenantParam> getListToVo(String userName, Integer page, Integer count) {
+    public ArrayList<TenantParam> getListToVo(String userName, long current, long size) {
         QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userService.getUserIdByUsername(userName));
-        return getListByWrapperToVo(queryWrapper, page, count);
+        return getListByWrapperToVo(queryWrapper, current, size);
     }
 
     @Override
-    public ArrayList<TenantParam> getByNameToVo(String name, String userName, Integer page, Integer count) {
+    public ArrayList<TenantParam> getByNameToVo(String name, String userName, long current, long size) {
         QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userService.getUserIdByUsername(userName));
         queryWrapper.eq("name", name);
-        return getListByWrapperToVo(queryWrapper, page, count);
+        return getListByWrapperToVo(queryWrapper, current, size);
     }
 
     @Override
@@ -76,11 +76,11 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         return getById(id).getName();
     }
 
-    private ArrayList<TenantParam> getListByWrapperToVo(QueryWrapper<Tenant> wrapper, Integer page, Integer count) {
+    private ArrayList<TenantParam> getListByWrapperToVo(QueryWrapper<Tenant> wrapper, long current, long size) {
         ArrayList<TenantParam> list = new ArrayList<>();
-        TenantParam tenantParam = new TenantParam();
-        List<Tenant> records = getBaseMapper().selectPage(new Page<>(page, count), wrapper).getRecords();
+        List<Tenant> records = getBaseMapper().selectPage(new Page<>(current, size), wrapper).getRecords();
         for (Tenant record : records) {
+            TenantParam tenantParam = new TenantParam();
             tenantParam.setId(record.getId());
             tenantParam.setName(record.getName());
             tenantParam.setIdcard(DesensitizedUtil.idCardNum(record.getIdcard(), 2, 3));
