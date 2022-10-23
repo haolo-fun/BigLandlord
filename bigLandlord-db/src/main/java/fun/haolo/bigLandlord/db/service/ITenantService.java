@@ -26,4 +26,6 @@ public interface ITenantService extends IService<Tenant> {
 
     ArrayList<TenantParam> getByNameToVo(String name, String userName, Integer page, Integer count);
 
+    String getNameById(Long id);
+
 }

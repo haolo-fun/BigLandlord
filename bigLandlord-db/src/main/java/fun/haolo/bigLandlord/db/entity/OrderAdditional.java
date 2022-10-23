@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @TableName("bl_order_key")
 @ApiModel(value = "OrderKey对象", description = "租单内容表")
-public class OrderKey implements Serializable {
+public class OrderAdditional implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

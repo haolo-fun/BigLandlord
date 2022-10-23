@@ -71,6 +71,11 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         return getListByWrapperToVo(queryWrapper, page, count);
     }
 
+    @Override
+    public String getNameById(Long id) {
+        return getById(id).getName();
+    }
+
     private ArrayList<TenantParam> getListByWrapperToVo(QueryWrapper<Tenant> wrapper, Integer page, Integer count) {
         ArrayList<TenantParam> list = new ArrayList<>();
         TenantParam tenantParam = new TenantParam();

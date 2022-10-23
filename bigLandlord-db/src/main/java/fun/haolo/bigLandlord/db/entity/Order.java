@@ -29,17 +29,29 @@ public class Order implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    @ApiModelProperty("房东id")
+    @TableField("user_id")
+    private Long userId;
+
     @ApiModelProperty("租客id")
     @TableField("tenant_id")
     private Long tenantId;
+
+    @ApiModelProperty("房源id")
+    @TableField("house_id")
+    private Long houseId;
 
     @ApiModelProperty("租单编号")
     @TableField("order_sn")
     private String orderSn;
 
-    @ApiModelProperty("租单状态（0->未支付，1->已支付)")
+    @ApiModelProperty("租期")
+    @TableField("count")
+    private Short count;
+
+    @ApiModelProperty("租单状态（0->未下发，1->已下发，2->已支付)")
     @TableField("order_status")
-    private Boolean orderStatus;
+    private Integer orderStatus;
 
     @ApiModelProperty("总费用")
     @TableField("price")
@@ -47,7 +59,7 @@ public class Order implements Serializable {
 
     @ApiModelProperty("支付交易号")
     @TableField("pay_id")
-    private byte[] payId;
+    private String payId;
 
     @ApiModelProperty("支付时间")
     @TableField("pay_time")
@@ -74,12 +86,28 @@ public class Order implements Serializable {
         this.id = id;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public Long getTenantId() {
         return tenantId;
     }
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public Long getHouseId() {
+        return houseId;
+    }
+
+    public void setHouseId(Long houseId) {
+        this.houseId = houseId;
     }
 
     public String getOrderSn() {
@@ -90,11 +118,19 @@ public class Order implements Serializable {
         this.orderSn = orderSn;
     }
 
-    public Boolean getOrderStatus() {
+    public Short getCount() {
+        return count;
+    }
+
+    public void setCount(Short count) {
+        this.count = count;
+    }
+
+    public Integer getOrderStatus() {
         return orderStatus;
     }
 
-    public void setOrderStatus(Boolean orderStatus) {
+    public void setOrderStatus(Integer orderStatus) {
         this.orderStatus = orderStatus;
     }
 
@@ -106,11 +142,11 @@ public class Order implements Serializable {
         this.price = price;
     }
 
-    public byte[] getPayId() {
+    public String getPayId() {
         return payId;
     }
 
-    public void setPayId(byte[] payId) {
+    public void setPayId(String payId) {
         this.payId = payId;
     }
 
@@ -149,16 +185,19 @@ public class Order implements Serializable {
     @Override
     public String toString() {
         return "Order{" +
-            "id = " + id +
-            ", tenantId = " + tenantId +
-            ", orderSn = " + orderSn +
-            ", orderStatus = " + orderStatus +
-            ", price = " + price +
-            ", payId = " + payId +
-            ", payTime = " + payTime +
-            ", createTime = " + createTime +
-            ", updateTime = " + updateTime +
-            ", deleted = " + deleted +
-        "}";
+                "id=" + id +
+                ", userId=" + userId +
+                ", tenantId=" + tenantId +
+                ", houseId=" + houseId +
+                ", orderSn='" + orderSn + '\'' +
+                ", count=" + count +
+                ", orderStatus=" + orderStatus +
+                ", price=" + price +
+                ", payId='" + payId + '\'' +
+                ", payTime=" + payTime +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", deleted=" + deleted +
+                '}';
     }
 }

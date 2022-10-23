@@ -92,6 +92,11 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
         return house2VO(list(wrapper));
     }
 
+    @Override
+    public String getAddressById(Long id) {
+        return getById(id).getAddress();
+    }
+
     private List<HouseParam> house2VO(List<House> list) {
         List<HouseParam> voList = new ArrayList<>();
         HouseParam vo = new HouseParam();

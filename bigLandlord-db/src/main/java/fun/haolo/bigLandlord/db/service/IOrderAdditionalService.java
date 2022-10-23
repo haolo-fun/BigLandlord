@@ -1,6 +1,6 @@
 package fun.haolo.bigLandlord.db.service;
 
-import fun.haolo.bigLandlord.db.entity.OrderKey;
+import fun.haolo.bigLandlord.db.entity.OrderAdditional;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author haolo
  * @since 2022-10-18
  */
-public interface IOrderKeyService extends IService<OrderKey> {
+public interface IOrderAdditionalService extends IService<OrderAdditional> {
 
 }

@@ -29,4 +29,6 @@ public interface IHouseService extends IService<House> {
     List<HouseParam> listByPriceRange2VO(Integer low, Integer high, String username);
 
     List<HouseParam> listByStatus2VO(Integer status, String username);
+
+    String getAddressById(Long id);
 }

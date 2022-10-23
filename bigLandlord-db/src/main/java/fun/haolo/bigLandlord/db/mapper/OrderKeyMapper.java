@@ -1,6 +1,6 @@
 package fun.haolo.bigLandlord.db.mapper;
 
-import fun.haolo.bigLandlord.db.entity.OrderKey;
+import fun.haolo.bigLandlord.db.entity.OrderAdditional;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author haolo
  * @since 2022-10-18
  */
-public interface OrderKeyMapper extends BaseMapper<OrderKey> {
+public interface OrderKeyMapper extends BaseMapper<OrderAdditional> {
 
 }
