@@ -54,18 +54,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null && !jwtTokenUtil.isTokenExpired(jwt)) {
                     // 通过token中的uuid从redis中判断token是否注销
                     String uuid = (String) jwt.getPayload("id");
-                    if (Objects.isNull(redisUtil.getCacheObject("token:" + uuid))){
-                        throw new TokenLogoutException("登录已被注销，请重新登录");
-                    }
-                    // 获取userDetails
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    if (!Objects.isNull(userDetails)) {
-                        log.info("userDetails:{}", userDetails);
-                        // 存入SecurityContextHolder
-                        // 获取权限信息封装到Authentication中
-                        UsernamePasswordAuthenticationToken authenticationToken =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    if (!Objects.isNull(redisUtil.getCacheObject("token:" + username + ":" + uuid))) {
+                        // 获取userDetails
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        if (!Objects.isNull(userDetails)) {
+                            log.info("userDetails:{}", userDetails);
+                            // 存入SecurityContextHolder
+                            // 获取权限信息封装到Authentication中
+                            UsernamePasswordAuthenticationToken authenticationToken =
+                                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                        }
                     }
                 }
             }

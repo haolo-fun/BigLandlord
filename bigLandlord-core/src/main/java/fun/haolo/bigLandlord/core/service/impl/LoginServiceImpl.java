@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.core.service.impl;
 
+import cn.hutool.jwt.JWT;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.dto.SecurityUserDetails;
@@ -56,7 +57,7 @@ public class LoginServiceImpl implements LoginService {
         String token = jwtTokenUtil.generateToken(userDetails);
         // tokenId信息存入redis
         String uuid = jwtTokenUtil.getUUIDByToken(token);
-        redisUtil.setCacheObject("token:" + uuid, userDetails, expiration, TimeUnit.SECONDS); // 过期时间单位，秒
+        redisUtil.setCacheObject("token:" + username + ":" + uuid, userDetails, expiration, TimeUnit.SECONDS); // 过期时间单位，秒
         return token;
     }
 
@@ -74,5 +75,20 @@ public class LoginServiceImpl implements LoginService {
         log.info("注册用户:{}", user.toString());
         // 存入数据库
         return iUserService.save(user) ? user : null;
+    }
+
+    @Override
+    public Boolean logout(String token) {
+        JWT jwt = jwtTokenUtil.getJWTFromToken(token);
+        String id = (String) jwt.getPayload("id");
+        String username = (String) jwt.getPayload("sub");
+        return redisUtil.deleteObject("token:" + username + ":" + id);
+    }
+
+    @Override
+    public Boolean logoutAll(String token) {
+        JWT jwt = jwtTokenUtil.getJWTFromToken(token);
+        String username = (String) jwt.getPayload("sub");
+        return redisUtil.deleteObjectsByPattern("token:" + username + ":*");
     }
 }

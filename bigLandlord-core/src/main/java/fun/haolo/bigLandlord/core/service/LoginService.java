@@ -23,4 +23,8 @@ public interface LoginService {
      * @return user信息对象
      */
     User register(User user);
+
+    Boolean logout(String token);
+
+    Boolean logoutAll(String token);
 }

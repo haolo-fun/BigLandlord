@@ -1,10 +1,13 @@
 package fun.haolo.bigLandlord.db.utils;
 
+import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,5 +62,15 @@ public class RedisUtil {
      */
     public boolean deleteObject(final String key) {
         return redisTemplate.delete(key);
+    }
+
+    public boolean deleteObjectsByPattern(final String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        if (!CollectionUtils.isEmpty(keys)) {
+            redisTemplate.delete(keys);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
