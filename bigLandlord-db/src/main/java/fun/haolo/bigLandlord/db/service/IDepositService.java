@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IDepositService extends IService<Deposit> {
 
+    Deposit getBySn(String sn);
 }

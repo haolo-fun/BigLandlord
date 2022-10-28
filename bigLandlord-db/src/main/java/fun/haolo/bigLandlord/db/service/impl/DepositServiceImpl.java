@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.db.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import fun.haolo.bigLandlord.db.entity.Deposit;
 import fun.haolo.bigLandlord.db.mapper.DepositMapper;
 import fun.haolo.bigLandlord.db.service.IDepositService;
@@ -17,4 +18,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class DepositServiceImpl extends ServiceImpl<DepositMapper, Deposit> implements IDepositService {
 
+    @Override
+    public Deposit getBySn(String sn) {
+        QueryWrapper<Deposit> wrapper = new QueryWrapper<>();
+        wrapper.eq("deposit_sn",sn);
+        return getOne(wrapper);
+    }
 }

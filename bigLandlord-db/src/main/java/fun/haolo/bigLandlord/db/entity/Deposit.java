@@ -29,6 +29,14 @@ public class Deposit implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    @ApiModelProperty("房东id")
+    @TableField("user_id")
+    private Long userId;
+
+    @ApiModelProperty("押金单编号")
+    @TableField("deposit_sn")
+    private String depositSn;
+
     @ApiModelProperty("租客id")
     @TableField("tenant_id")
     private Long tenantId;
@@ -37,13 +45,13 @@ public class Deposit implements Serializable {
     @TableField("deposit")
     private BigDecimal deposit;
 
-    @ApiModelProperty("押金状态（0->正常，1->已退回）")
+    @ApiModelProperty("押金状态（0->未支付，1->已支付，2->已退款）")
     @TableField("status")
-    private Boolean status;
+    private Integer status;
 
     @ApiModelProperty("支付交易号")
     @TableField("pay_id")
-    private byte[] payId;
+    private String payId;
 
     @ApiModelProperty("支付时间")
     @TableField("pay_time")
@@ -70,6 +78,22 @@ public class Deposit implements Serializable {
         this.id = id;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getDepositSn() {
+        return depositSn;
+    }
+
+    public void setDepositSn(String depositSn) {
+        this.depositSn = depositSn;
+    }
+
     public Long getTenantId() {
         return tenantId;
     }
@@ -86,19 +110,19 @@ public class Deposit implements Serializable {
         this.deposit = deposit;
     }
 
-    public Boolean getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
-    public byte[] getPayId() {
+    public String getPayId() {
         return payId;
     }
 
-    public void setPayId(byte[] payId) {
+    public void setPayId(String payId) {
         this.payId = payId;
     }
 
@@ -137,15 +161,17 @@ public class Deposit implements Serializable {
     @Override
     public String toString() {
         return "Deposit{" +
-            "id = " + id +
-            ", tenantId = " + tenantId +
-            ", deposit = " + deposit +
-            ", status = " + status +
-            ", payId = " + payId +
-            ", payTime = " + payTime +
-            ", createTime = " + createTime +
-            ", updateTime = " + updateTime +
-            ", deleted = " + deleted +
-        "}";
+                "id=" + id +
+                ", userId=" + userId +
+                ", depositSn='" + depositSn + '\'' +
+                ", tenantId=" + tenantId +
+                ", deposit=" + deposit +
+                ", status=" + status +
+                ", payId='" + payId + '\'' +
+                ", payTime=" + payTime +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", deleted=" + deleted +
+                '}';
     }
 }

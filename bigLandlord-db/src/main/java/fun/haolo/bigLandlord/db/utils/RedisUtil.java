@@ -1,6 +1,5 @@
 package fun.haolo.bigLandlord.db.utils;
 
-import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -60,11 +59,16 @@ public class RedisUtil {
      *
      * @param key
      */
-    public boolean deleteObject(final String key) {
+    public Boolean deleteObject(final String key) {
         return redisTemplate.delete(key);
     }
 
-    public boolean deleteObjectsByPattern(final String pattern) {
+    /**
+     * 模糊删除
+     * @param pattern 模糊通配符
+     * @return 是否删除成功
+     */
+    public Boolean deleteObjectsByPattern(final String pattern) {
         Set<String> keys = redisTemplate.keys(pattern);
         if (!CollectionUtils.isEmpty(keys)) {
             redisTemplate.delete(keys);
