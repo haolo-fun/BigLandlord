@@ -46,7 +46,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public List<OrderVO> selectPage(long current, long size, Wrapper<Order> queryWrapper) {
+    public List<OrderVO> selectPage(long current, long size, QueryWrapper<Order> queryWrapper) {
         List<Order> orderList = getBaseMapper().selectPage(new Page<>(current, size), queryWrapper).getRecords();
         List<OrderVO> orderVOList = new ArrayList<>();
         OrderVO orderVO = new OrderVO();

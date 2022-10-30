@@ -2,6 +2,7 @@ package fun.haolo.bigLandlord.land.api.controller;
 
 import fun.haolo.bigLandlord.core.api.ResponseResult;
 import fun.haolo.bigLandlord.db.param.OrderAdditionalParam;
+import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import fun.haolo.bigLandlord.db.vo.OrderAdditionalVO;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 import fun.haolo.bigLandlord.land.api.service.LandOrderService;
@@ -62,11 +63,27 @@ public class OrderController {
         return ResponseResult.success();
     }
 
-    @PutMapping("/updateStatus/{sn}/{status}")
+    @PutMapping("/updateStatus/NOT_ISSUED/{sn}")
     @ApiOperation(value = "更新租单状态")
-    public ResponseResult<Object> updateStatus(@PathVariable String sn, @PathVariable Integer status) {
+    public ResponseResult<Object> updateStatusNOT_ISSUED(@PathVariable String sn) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Boolean b = service.updateStatus(userDetails.getUsername(), sn, status);
+        Boolean b = service.updateStatus(userDetails.getUsername(), sn, OrderStatusConstant.NOT_ISSUED);
+        return b ? ResponseResult.success() : ResponseResult.failed();
+    }
+
+    @PutMapping("/updateStatus/HAS_BEEN_ISSUED/{sn}")
+    @ApiOperation(value = "更新租单状态")
+    public ResponseResult<Object> updateStatusHAS_BEEN_ISSUED(@PathVariable String sn) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Boolean b = service.updateStatus(userDetails.getUsername(), sn, OrderStatusConstant.HAS_BEEN_ISSUED);
+        return b ? ResponseResult.success() : ResponseResult.failed();
+    }
+
+    @PutMapping("/updateStatus/HAVE_TO_PAY/{sn}")
+    @ApiOperation(value = "更新租单状态")
+    public ResponseResult<Object> updateStatusHAVE_TO_PAY(@PathVariable String sn) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Boolean b = service.updateStatus(userDetails.getUsername(), sn, OrderStatusConstant.HAVE_TO_PAY);
         return b ? ResponseResult.success() : ResponseResult.failed();
     }
 

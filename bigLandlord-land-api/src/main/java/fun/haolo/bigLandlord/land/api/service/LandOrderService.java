@@ -7,10 +7,10 @@ import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.entity.OrderAdditional;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.param.OrderAdditionalParam;
-import fun.haolo.bigLandlord.db.service.IHouseService;
-import fun.haolo.bigLandlord.db.service.IOrderAdditionalService;
-import fun.haolo.bigLandlord.db.service.IOrderService;
-import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.service.*;
+import fun.haolo.bigLandlord.db.utils.HouseStatusConstant;
+import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
+import fun.haolo.bigLandlord.db.utils.SNUtil;
 import fun.haolo.bigLandlord.db.vo.OrderAdditionalVO;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -43,6 +43,12 @@ public class LandOrderService {
     @Autowired
     private IHouseService houseService;
 
+    @Autowired
+    private IDepositService depositService;
+
+    @Autowired
+    private SNUtil snUtil;
+
     /**
      * 构建租单
      *
@@ -61,16 +67,18 @@ public class LandOrderService {
         order.setUserId(userId);
         order.setTenantId(tenantId);
         order.setHouseId(houseId);
-        order.setOrderSn(generateOrderSn());
+        order.setOrderSn(snUtil.generateOrderSn());
         order.setCount(count);
-        order.setOrderStatus(0);
+        order.setOrderStatus(OrderStatusConstant.NOT_ISSUED);
         order.setPrice(house.getPrice().multiply(new BigDecimal(count))); // 价格 等于 房租*租期
 
-        // todo 添加押金单 house.getDeposit()
+        // 添加押金单
+        BigDecimal deposit = house.getDeposit();
+        depositService.initAdd(userId, tenantId, deposit);
 
         // 更新house
         house.setTenantId(tenantId);
-        house.setStatus(1);
+        house.setStatus(HouseStatusConstant.HAVE_TO_RENT);
         house.setDueDate(LocalDate.now().plusMonths(count));
 
         orderService.save(order);
@@ -133,12 +141,12 @@ public class LandOrderService {
     /**
      * 更改租单状态
      *
-     * @param username 房东
-     * @param orderSn  租单号
-     * @param status   租单状态（0->未下发，1->已下发，2->已支付)
+     * @param username            房东
+     * @param orderSn             租单号
+     * @param orderStatusConstant 租单状态（0->未下发，1->已下发，2->已支付)
      * @return 是否更改成功
      */
-    public Boolean updateStatus(String username, String orderSn, Integer status) {
+    public Boolean updateStatus(String username, String orderSn, Integer orderStatusConstant) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("order_sn", orderSn);
@@ -146,7 +154,7 @@ public class LandOrderService {
         if (!order.getUserId().equals(userId)) throw new UnauthorizedException("这不是你的租单，无法完成此操作");
         Order newOrder = new Order();
         BeanUtils.copyProperties(order, newOrder, "updateTime");
-        newOrder.setOrderStatus(status);
+        newOrder.setOrderStatus(orderStatusConstant);
         return orderService.updateById(newOrder);
     }
 
@@ -264,36 +272,5 @@ public class LandOrderService {
         orderService.updateById(newOrder);
     }
 
-    /**
-     * 构建租单号
-     *
-     * @return 租单号
-     */
-    private String generateOrderSn() {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String now = df.format(LocalDate.now());
-        String orderSn = now + getRandomNum(6);
-        while (countByOrderSn(orderSn) != 0) {
-            orderSn = now + getRandomNum(6);
-        }
-        return orderSn;
-    }
 
-    private String getRandomNum(Integer num) {
-        String base = "0123456789";
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < num; i++) {
-            int number = random.nextInt(base.length());
-            sb.append(base.charAt(number));
-        }
-        return sb.toString();
-    }
-
-    private int countByOrderSn(String orderSn) {
-        QueryWrapper<Order> wrapper = new QueryWrapper<>();
-        wrapper.eq("order_sn", orderSn);
-        long count = orderService.count(wrapper);
-        return (int) count;
-    }
 }
