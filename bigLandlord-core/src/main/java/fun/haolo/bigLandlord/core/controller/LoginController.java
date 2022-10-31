@@ -1,16 +1,19 @@
 package fun.haolo.bigLandlord.core.controller;
 
 import fun.haolo.bigLandlord.core.api.ResponseResult;
+import fun.haolo.bigLandlord.core.param.LoginParam;
 import fun.haolo.bigLandlord.core.param.UserParam;
 import fun.haolo.bigLandlord.core.service.LoginService;
 import fun.haolo.bigLandlord.db.entity.User;
+import fun.haolo.bigLandlord.db.vo.UserInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @Api(tags = "core_登录接口")
+@RequestMapping("/user")
 public class LoginController {
     @Autowired
     LoginService loginService;
@@ -33,8 +37,8 @@ public class LoginController {
 
     @PostMapping("/login")
     @ApiOperation(value = "登录接口")
-    public ResponseResult<String> login(String username, String password) {
-        String token = loginService.login(username, password);
+    public ResponseResult<String> login(@RequestBody LoginParam param) {
+        String token = loginService.login(param.getUsername(), param.getPassword());
         return ResponseResult.success(token);
     }
 
@@ -48,17 +52,25 @@ public class LoginController {
         return ResponseResult.success(register);
     }
 
-    @PostMapping("/exit")
+    @PostMapping("/logout")
     @ApiOperation(value = "注销登录")
     public ResponseResult<Object> logout() {
         String token = request.getHeader(tokenHeader);
         return loginService.logout(token) ? ResponseResult.success() : ResponseResult.failed();
     }
 
-    @PostMapping("/exitAll")
+    @PostMapping("/logoutAll")
     @ApiOperation(value = "注销所有登录")
     public ResponseResult<Object> logoutAll() {
         String token = request.getHeader(tokenHeader);
         return loginService.logoutAll(token) ? ResponseResult.success() : ResponseResult.failed();
+    }
+
+    @GetMapping("/info")
+    @ApiOperation(value = "获取用户信息")
+    public ResponseResult<UserInfoVO> info() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserInfoVO userInfoVO = loginService.userInfo(userDetails.getUsername());
+        return ResponseResult.success(userInfoVO);
     }
 }

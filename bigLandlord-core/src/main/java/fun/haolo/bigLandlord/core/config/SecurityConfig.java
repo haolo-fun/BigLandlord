@@ -54,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 // 配置登录接口放行
-                .antMatchers("/login", "/register").permitAll()
+                .antMatchers("/user/login", "/user/register").permitAll()
                 .antMatchers("/swagger-resources/**", "/api-docs", "/doc.html", "/api-docs-ext", "/webjars/**", "/v2/**", "/swagger-ui.html", "/favicon.ico").permitAll()
                 // 跨域请求会先进行一次options请求
                 .antMatchers(HttpMethod.OPTIONS).permitAll()

@@ -1,6 +1,7 @@
 package fun.haolo.bigLandlord.core.service;
 
 import fun.haolo.bigLandlord.db.entity.User;
+import fun.haolo.bigLandlord.db.vo.UserInfoVO;
 
 /**
  * @Author haolo
@@ -27,4 +28,6 @@ public interface LoginService {
     Boolean logout(String token);
 
     Boolean logoutAll(String token);
+
+    UserInfoVO userInfo(String username);
 }

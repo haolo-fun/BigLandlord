@@ -1,14 +1,18 @@
 package fun.haolo.bigLandlord.core.service.impl;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.dto.SecurityUserDetails;
 import fun.haolo.bigLandlord.core.service.LoginService;
+import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
+import fun.haolo.bigLandlord.db.service.IUserRoleRelationService;
 import fun.haolo.bigLandlord.db.utils.JwtTokenUtil;
 import fun.haolo.bigLandlord.db.entity.User;
 import fun.haolo.bigLandlord.db.service.IUserService;
 import fun.haolo.bigLandlord.db.utils.RedisUtil;
+import fun.haolo.bigLandlord.db.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +46,9 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private IUserService iUserService;
+
+    @Autowired
+    private IUserRoleRelationService userRoleRelationService;
 
     @Value("${jwt.expiration}")
     private Integer expiration; //单位：秒
@@ -90,5 +98,19 @@ public class LoginServiceImpl implements LoginService {
         JWT jwt = jwtTokenUtil.getJWTFromToken(token);
         String username = (String) jwt.getPayload("sub");
         return redisUtil.deleteObjectsByPattern("token:" + username + ":*");
+    }
+
+    @Override
+    public UserInfoVO userInfo(String username) {
+        User user = iUserService.getUserByUsername(username);
+        List<String> roles = userRoleRelationService.getRoles(user.getId());
+        UserInfoVO userInfoVO = new UserInfoVO();
+        userInfoVO.setUsername(user.getUsername());
+        userInfoVO.setEmail(user.getEmail());
+        userInfoVO.setIcon(user.getIcon());
+        userInfoVO.setNickName(user.getNickName());
+        userInfoVO.setMobile(DesensitizedUtil.mobilePhone(user.getMobile()));
+        userInfoVO.setRoles(roles);
+        return userInfoVO;
     }
 }
