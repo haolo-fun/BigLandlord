@@ -1,13 +1,15 @@
-package fun.haolo.bigLandlord.db.param;
+package fun.haolo.bigLandlord.db.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.time.LocalDateTime;
 
 /**
  * @author haolo
- * @since 2022-10-18 14:37
+ * @since 2022-11-03 20:26
  */
-public class TenantParam {
-
+public class TenantDTO {
     private Long id;
 
     @ApiModelProperty("租客姓名")
@@ -18,6 +20,10 @@ public class TenantParam {
 
     @ApiModelProperty("身份证")
     private String idcard;
+
+    @ApiModelProperty("创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime creatTime;
 
     public Long getId() {
         return id;
@@ -51,4 +57,11 @@ public class TenantParam {
         this.idcard = idcard;
     }
 
+    public LocalDateTime getCreatTime() {
+        return creatTime;
+    }
+
+    public void setCreatTime(LocalDateTime creatTime) {
+        this.creatTime = creatTime;
+    }
 }

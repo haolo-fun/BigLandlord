@@ -1,14 +1,19 @@
 package fun.haolo.bigLandlord.db.service.impl;
 
 import cn.hutool.core.util.DesensitizedUtil;
+import cn.hutool.core.util.IdcardUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import fun.haolo.bigLandlord.db.dto.TenantDTO;
 import fun.haolo.bigLandlord.db.entity.Tenant;
+import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.mapper.TenantMapper;
 import fun.haolo.bigLandlord.db.param.TenantParam;
 import fun.haolo.bigLandlord.db.service.ITenantService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.vo.TenantOptionsVO;
+import fun.haolo.bigLandlord.db.vo.TenantVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +48,7 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     @Override
     public Boolean remove(Long id, String userName) {
         Tenant tenant = getById(id);
+        // todo 修改这个类下的Assert为自定义异常
         Assert.state(userService.getUserIdByUsername(userName).equals(tenant.getUserId()), "这不是你的租客，无法完成此操作");
         return removeById(tenant);
     }
@@ -51,24 +57,47 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     public Tenant updateByVo(TenantParam param, String userName) {
         Tenant tenant = getById(param.getId());
         Assert.state(userService.getUserIdByUsername(userName).equals(tenant.getUserId()), "这不是你的租客，无法完成此操作");
-        BeanUtils.copyProperties(param, tenant, "id");
+        if (param.getIdcard().isEmpty()) {
+            BeanUtils.copyProperties(param, tenant, "id", "idcard");
+        } else {
+            if (IdcardUtil.isValidCard18(param.getIdcard())) throw new RuntimeException("身份证格式不正确");
+            BeanUtils.copyProperties(param, tenant, "id");
+        }
         boolean b = updateById(tenant);
         return b ? tenant : null;
     }
 
     @Override
-    public ArrayList<TenantParam> getListToVo(String userName, long current, long size) {
+    public TenantVO getListToVo(String userName, boolean desc, long current, long size) {
         QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userService.getUserIdByUsername(userName));
+        if (desc) queryWrapper.orderByDesc("id");
         return getListByWrapperToVo(queryWrapper, current, size);
     }
 
     @Override
-    public ArrayList<TenantParam> getByNameToVo(String name, String userName, long current, long size) {
+    public TenantVO getByNameToVo(String name, String userName, long current, long size) {
         QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userService.getUserIdByUsername(userName));
-        queryWrapper.eq("name", name);
+        queryWrapper.like("name", name);
         return getListByWrapperToVo(queryWrapper, current, size);
+    }
+
+    @Override
+    public List<TenantOptionsVO> getByNameToOptionsVO(String name, String userName) {
+        QueryWrapper<Tenant> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userService.getUserIdByUsername(userName));
+        queryWrapper.like("name", name);
+        List<Tenant> tenantList = getBaseMapper().selectPage(new Page<>(1, 10), queryWrapper).getRecords();
+        List<TenantOptionsVO> list = new ArrayList<>();
+        for (Tenant tenant : tenantList) {
+            TenantOptionsVO tenantOptionsVO = new TenantOptionsVO();
+            tenantOptionsVO.setTenantId(tenant.getId());
+            tenantOptionsVO.setName(tenant.getName());
+            tenantOptionsVO.setMobile(tenant.getMobile());
+            list.add(tenantOptionsVO);
+        }
+        return list;
     }
 
     @Override
@@ -76,17 +105,34 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         return getById(id).getName();
     }
 
-    private ArrayList<TenantParam> getListByWrapperToVo(QueryWrapper<Tenant> wrapper, long current, long size) {
-        ArrayList<TenantParam> list = new ArrayList<>();
-        List<Tenant> records = getBaseMapper().selectPage(new Page<>(current, size), wrapper).getRecords();
+    @Override
+    public TenantDTO getById(String username, Long id) {
+        Tenant tenant = getById(id);
+        if (!userService.getUserIdByUsername(username).equals(tenant.getUserId()))
+            throw new UnauthorizedException("这不是你的租客，无法完成此操作");
+        TenantDTO tenantDTO = new TenantDTO();
+        BeanUtils.copyProperties(tenant, tenantDTO);
+        tenantDTO.setIdcard(DesensitizedUtil.idCardNum(tenant.getIdcard(), 2, 3));
+        return tenantDTO;
+    }
+
+    private TenantVO getListByWrapperToVo(QueryWrapper<Tenant> wrapper, long current, long size) {
+        ArrayList<TenantDTO> list = new ArrayList<>();
+        Page<Tenant> tenantPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
+        long total = tenantPage.getTotal();
+        List<Tenant> records = tenantPage.getRecords();
         for (Tenant record : records) {
-            TenantParam tenantParam = new TenantParam();
-            tenantParam.setId(record.getId());
-            tenantParam.setName(record.getName());
-            tenantParam.setIdcard(DesensitizedUtil.idCardNum(record.getIdcard(), 2, 3));
-            tenantParam.setMobile(record.getMobile());
-            list.add(tenantParam);
+            TenantDTO tenantDTO = new TenantDTO();
+            tenantDTO.setId(record.getId());
+            tenantDTO.setName(record.getName());
+            tenantDTO.setIdcard(DesensitizedUtil.idCardNum(record.getIdcard(), 2, 3));
+            tenantDTO.setMobile(record.getMobile());
+            tenantDTO.setCreatTime(record.getCreateTime());
+            list.add(tenantDTO);
         }
-        return list;
+        TenantVO vo = new TenantVO();
+        vo.setList(list);
+        vo.setTotal(total);
+        return vo;
     }
 }

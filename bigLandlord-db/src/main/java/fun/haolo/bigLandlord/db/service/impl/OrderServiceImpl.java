@@ -1,6 +1,5 @@
 package fun.haolo.bigLandlord.db.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import fun.haolo.bigLandlord.db.entity.Order;
@@ -9,6 +8,7 @@ import fun.haolo.bigLandlord.db.service.IHouseService;
 import fun.haolo.bigLandlord.db.service.IOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import fun.haolo.bigLandlord.db.service.ITenantService;
+import fun.haolo.bigLandlord.db.dto.OrderDTO;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,25 +46,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public List<OrderVO> selectPage(long current, long size, QueryWrapper<Order> queryWrapper) {
-        List<Order> orderList = getBaseMapper().selectPage(new Page<>(current, size), queryWrapper).getRecords();
-        List<OrderVO> orderVOList = new ArrayList<>();
-        OrderVO orderVO = new OrderVO();
+    public OrderVO selectPage(long current, long size, QueryWrapper<Order> queryWrapper) {
+        Page<Order> orderPage = getBaseMapper().selectPage(new Page<>(current, size), queryWrapper);
+        List<Order> orderList = orderPage.getRecords();
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+        OrderDTO orderDTO = new OrderDTO();
         for (Order order : orderList) {
-            orderVO.setOrderSn(order.getOrderSn());
-            orderVO.setHouseId(order.getHouseId());
-            orderVO.setAddress(houseService.getAddressById(order.getHouseId()));
-            orderVO.setTenantId(order.getTenantId());
-            orderVO.setName(tenantService.getNameById(order.getTenantId()));
-            orderVO.setCount(order.getCount());
-            orderVO.setOrderStatus(order.getOrderStatus());
-            orderVO.setPrice(order.getPrice());
-            orderVO.setPayId(order.getPayId());
-            orderVO.setPayTime(order.getPayTime());
-            orderVO.setCreateTime(order.getCreateTime());
+            orderDTO.setOrderSn(order.getOrderSn());
+            orderDTO.setHouseId(order.getHouseId());
+            orderDTO.setAddress(houseService.getAddressById(order.getHouseId()));
+            orderDTO.setTenantId(order.getTenantId());
+            orderDTO.setName(tenantService.getNameById(order.getTenantId()));
+            orderDTO.setCount(order.getCount());
+            orderDTO.setOrderStatus(order.getOrderStatus());
+            orderDTO.setPrice(order.getPrice());
+            orderDTO.setPayId(order.getPayId());
+            orderDTO.setPayTime(order.getPayTime());
+            orderDTO.setCreateTime(order.getCreateTime());
 
-            orderVOList.add(orderVO);
+            orderDTOList.add(orderDTO);
         }
-        return orderVOList;
+        OrderVO orderVO = new OrderVO();
+        orderVO.setList(orderDTOList);
+        orderVO.setTotal(orderPage.getTotal());
+        return orderVO;
     }
 }

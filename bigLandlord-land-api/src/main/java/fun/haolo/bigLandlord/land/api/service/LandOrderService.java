@@ -1,7 +1,6 @@
 package fun.haolo.bigLandlord.land.api.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.entity.OrderAdditional;
@@ -12,6 +11,7 @@ import fun.haolo.bigLandlord.db.utils.HouseStatusConstant;
 import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import fun.haolo.bigLandlord.db.utils.SNUtil;
 import fun.haolo.bigLandlord.db.vo.OrderAdditionalVO;
+import fun.haolo.bigLandlord.db.dto.OrderDTO;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @author haolo
@@ -33,6 +31,9 @@ public class LandOrderService {
 
     @Autowired
     private IOrderService orderService;
+
+    @Autowired
+    private IOrderAdditionalService additionalService;
 
     @Autowired
     private IUserService userService;
@@ -83,6 +84,14 @@ public class LandOrderService {
 
         orderService.save(order);
         houseService.updateById(house);
+    }
+
+    public List<OrderAdditionalVO> getAdditionalList(String username, String sn) {
+        Long userId = userService.getUserIdByUsername(username);
+        Order order = orderService.getOrderBySn(sn);
+        if (!order.getUserId().equals(userId)) throw new UnauthorizedException("这不是你的租单，无法完成此操作");
+        Long orderId = order.getId();
+        return additionalService.getListByOrderId(orderId);
     }
 
     /**
@@ -165,9 +174,9 @@ public class LandOrderService {
      * @param current  当前页
      * @param size     每页显示条数
      * @param desc     是否倒序
-     * @return List<OrderVO>
+     * @return List<OrderDTO>
      */
-    public List<OrderVO> list(String username, long current, long size, Boolean desc) {
+    public OrderVO list(String username, long current, long size, Boolean desc) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
@@ -180,9 +189,9 @@ public class LandOrderService {
      *
      * @param username 房东
      * @param sn       租单号
-     * @return List<OrderVO>
+     * @return List<OrderDTO>
      */
-    public List<OrderVO> getByOrderSn(String username, String sn) {
+    public OrderVO getByOrderSn(String username, String sn) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
@@ -198,9 +207,9 @@ public class LandOrderService {
      * @param current  当前页
      * @param size     每页显示条数
      * @param desc     是否倒序
-     * @return List<OrderVO>
+     * @return List<OrderDTO>
      */
-    public List<OrderVO> listByHouseId(String username, Long houseId, long current, long size, Boolean desc) {
+    public OrderVO listByHouseId(String username, Long houseId, long current, long size, Boolean desc) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
@@ -216,9 +225,9 @@ public class LandOrderService {
      * @param tenantId 租客id
      * @param current  当前页
      * @param size     每页显示条数
-     * @return List<OrderVO>
+     * @return List<OrderDTO>
      */
-    public List<OrderVO> listByTenantId(String username, Long tenantId, long current, long size, Boolean desc) {
+    public OrderVO listByTenantId(String username, Long tenantId, long current, long size, Boolean desc) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
@@ -235,9 +244,9 @@ public class LandOrderService {
      * @param current     当前页
      * @param size        每页显示条数
      * @param desc        是否倒序
-     * @return List<OrderVO>
+     * @return List<OrderDTO>
      */
-    public List<OrderVO> listByOrderStatus(String username, Integer orderStatus, long current, long size, Boolean desc) {
+    public OrderVO listByOrderStatus(String username, Integer orderStatus, long current, long size, Boolean desc) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);

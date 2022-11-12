@@ -1,13 +1,18 @@
 package fun.haolo.bigLandlord.db.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import fun.haolo.bigLandlord.db.dto.HouseDTO;
 import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.mapper.HouseMapper;
 import fun.haolo.bigLandlord.db.param.HouseParam;
 import fun.haolo.bigLandlord.db.service.IHouseService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import fun.haolo.bigLandlord.db.service.ITenantService;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
+import fun.haolo.bigLandlord.db.vo.HouseVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,12 +32,15 @@ import java.util.List;
 public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements IHouseService {
 
     @Autowired
-    IUserService userService;
+    private IUserService userService;
+
+    @Autowired
+    private ITenantService tenantService;
 
     @Override
     public House add(HouseParam param, String username) {
         House house = new House();
-        BeanUtils.copyProperties(param, house);
+        BeanUtils.copyProperties(param, house, "id");
         Long userId = userService.getUserIdByUsername(username);
         house.setUserId(userId);
         boolean save = save(house);
@@ -58,38 +66,47 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
     }
 
     @Override
-    public List<HouseParam> listByUsername2VO(String username) {
+    public HouseVO listByUsername2VO(String username, long current, long size) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<House> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
-        return house2VO(list(wrapper));
+        return house2VO(wrapper, current, size);
     }
 
     @Override
-    public List<HouseParam> listByAreaRange2VO(Integer low, Integer high, String username) {
+    public HouseVO listByAddress2VO(String address, String username, long current, long size) {
+        Long userId = userService.getUserIdByUsername(username);
+        QueryWrapper<House> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId);
+        wrapper.like("address", address);
+        return house2VO(wrapper, current, size);
+    }
+
+    @Override
+    public HouseVO listByAreaRange2VO(Integer low, Integer high, String username, long current, long size) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<House> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         wrapper.between("area", low, high);
-        return house2VO(list(wrapper));
+        return house2VO(wrapper, current, size);
     }
 
     @Override
-    public List<HouseParam> listByPriceRange2VO(Integer low, Integer high, String username) {
+    public HouseVO listByPriceRange2VO(Integer low, Integer high, String username, long current, long size) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<House> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         wrapper.between("price", low, high);
-        return house2VO(list(wrapper));
+        return house2VO(wrapper, current, size);
     }
 
     @Override
-    public List<HouseParam> listByStatus2VO(Integer status, String username) {
+    public HouseVO listByStatus2VO(Integer status, String username, long current, long size) {
         Long userId = userService.getUserIdByUsername(username);
         QueryWrapper<House> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId);
         wrapper.eq("status", status);
-        return house2VO(list(wrapper));
+        return house2VO(wrapper, current, size);
     }
 
     @Override
@@ -97,13 +114,45 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
         return getById(id).getAddress();
     }
 
-    private List<HouseParam> house2VO(List<House> list) {
-        List<HouseParam> voList = new ArrayList<>();
-        for (House house : list) {
-            HouseParam vo = new HouseParam();
-            BeanUtils.copyProperties(house, vo);
-            voList.add(vo);
+    @Override
+    public List<HouseOptionsVO> getHouseOptions(String username, String address) {
+        Long userId = userService.getUserIdByUsername(username);
+        QueryWrapper<House> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId);
+        wrapper.like("address", address);
+        List<House> houseList = getBaseMapper().selectPage(new Page<>(1, 10), wrapper).getRecords();
+        List<HouseOptionsVO> list = new ArrayList<>();
+        for (House house : houseList) {
+            HouseOptionsVO houseOptionsVO = new HouseOptionsVO();
+            houseOptionsVO.setHouseId(house.getId());
+            houseOptionsVO.setAddress(house.getAddress());
+            list.add(houseOptionsVO);
         }
-        return voList;
+        return list;
+    }
+
+    private HouseVO house2VO(QueryWrapper<House> wrapper, long current, long size) {
+        Page<House> housePage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
+        List<House> list = housePage.getRecords();
+        List<HouseDTO> dtoList = new ArrayList<>();
+        for (House house : list) {
+            HouseDTO dto = new HouseDTO();
+            dto.setId(house.getId());
+            dto.setAddress(house.getAddress());
+            dto.setArea(house.getArea());
+            dto.setDeposit(house.getDeposit());
+            dto.setPrice(house.getPrice());
+            dto.setStatus(house.getStatus());
+            if (house.getTenantId() != null) {
+                dto.setTenantId(house.getTenantId());
+                dto.setTenantName(tenantService.getNameById(house.getTenantId()));
+            }
+            dto.setDueDate(house.getDueDate());
+            dtoList.add(dto);
+        }
+        HouseVO houseVO = new HouseVO();
+        houseVO.setList(dtoList);
+        houseVO.setTotal(housePage.getTotal());
+        return houseVO;
     }
 }

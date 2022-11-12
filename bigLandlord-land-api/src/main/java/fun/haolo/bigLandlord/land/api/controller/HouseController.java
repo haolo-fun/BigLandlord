@@ -4,6 +4,8 @@ import fun.haolo.bigLandlord.core.api.ResponseResult;
 import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.param.HouseParam;
 import fun.haolo.bigLandlord.db.service.IHouseService;
+import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
+import fun.haolo.bigLandlord.db.vo.HouseVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,35 +57,54 @@ public class HouseController {
         return house != null ? ResponseResult.success(house) : ResponseResult.failed();
     }
 
-    @GetMapping("/list")
+    @GetMapping("/list/{current}/{size}")
     @ApiOperation(value = "查询所有信息")
-    public ResponseResult<List<HouseParam>> list() {
+    public ResponseResult<HouseVO> list(@PathVariable Long current, @PathVariable Long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<HouseParam> list = houseService.listByUsername2VO(userDetails.getUsername());
-        return ResponseResult.success(list);
+        HouseVO houseVO = houseService.listByUsername2VO(userDetails.getUsername(), current, size);
+        return ResponseResult.success(houseVO);
     }
 
-    @GetMapping("/list/area/{low}/{high}")
+    @GetMapping("/list/address/{address}/{current}/{size}")
+    @ApiOperation(value = "根据地址查询")
+    public ResponseResult<HouseVO> listByAddress(@PathVariable String address, @PathVariable Long current, @PathVariable Long size) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        HouseVO houseVO = houseService.listByAddress2VO(address, userDetails.getUsername(), current, size);
+        return ResponseResult.success(houseVO);
+    }
+
+    @GetMapping("/list/area/{low}/{high}/{current}/{size}")
     @ApiOperation(value = "通过面积范围查询")
-    public ResponseResult<List<HouseParam>> listByAreaRange(@PathVariable Integer low, @PathVariable Integer high) {
+    public ResponseResult<HouseVO> listByAreaRange(@PathVariable Integer low, @PathVariable Integer high,
+                                                   @PathVariable Long current, @PathVariable Long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<HouseParam> list = houseService.listByAreaRange2VO(low, high, userDetails.getUsername());
-        return ResponseResult.success(list);
+        HouseVO houseVO = houseService.listByAreaRange2VO(low, high, userDetails.getUsername(), current, size);
+        return ResponseResult.success(houseVO);
     }
 
-    @GetMapping("/list/price/{low}/{high}")
+    @GetMapping("/list/price/{low}/{high}/{current}/{size}")
     @ApiOperation(value = "通过价格范围查询")
-    public ResponseResult<List<HouseParam>> listByPriceRange(@PathVariable Integer low, @PathVariable Integer high) {
+    public ResponseResult<HouseVO> listByPriceRange(@PathVariable Integer low, @PathVariable Integer high,
+                                                    @PathVariable Long current, @PathVariable Long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<HouseParam> list = houseService.listByPriceRange2VO(low, high, userDetails.getUsername());
-        return ResponseResult.success(list);
+        HouseVO houseVO = houseService.listByPriceRange2VO(low, high, userDetails.getUsername(), current, size);
+        return ResponseResult.success(houseVO);
     }
 
-    @GetMapping("/list/status/{status}")
+    @GetMapping("/list/status/{status}/{current}/{size}")
     @ApiOperation(value = "通过状态查询")
-    public ResponseResult<List<HouseParam>> listByStatus(@PathVariable Integer status) {
+    public ResponseResult<HouseVO> listByStatus(@PathVariable Integer status,
+                                                @PathVariable Long current, @PathVariable Long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<HouseParam> list = houseService.listByStatus2VO(status, userDetails.getUsername());
-        return ResponseResult.success(list);
+        HouseVO houseVO = houseService.listByStatus2VO(status, userDetails.getUsername(), current, size);
+        return ResponseResult.success(houseVO);
+    }
+
+    @GetMapping("/options/{address}")
+    @ApiOperation(value = "获取HouseOptions")
+    public ResponseResult<List<HouseOptionsVO>> listByOptions(@PathVariable String address) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<HouseOptionsVO> houseOptions = houseService.getHouseOptions(userDetails.getUsername(), address);
+        return ResponseResult.success(houseOptions);
     }
 }

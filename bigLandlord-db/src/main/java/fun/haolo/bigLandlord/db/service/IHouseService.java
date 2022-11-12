@@ -3,6 +3,8 @@ package fun.haolo.bigLandlord.db.service;
 import fun.haolo.bigLandlord.db.entity.House;
 import com.baomidou.mybatisplus.extension.service.IService;
 import fun.haolo.bigLandlord.db.param.HouseParam;
+import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
+import fun.haolo.bigLandlord.db.vo.HouseVO;
 
 import java.util.List;
 
@@ -22,13 +24,17 @@ public interface IHouseService extends IService<House> {
 
     House update(HouseParam param, String username);
 
-    List<HouseParam> listByUsername2VO(String username);
+    HouseVO listByUsername2VO(String username, long current, long size);
 
-    List<HouseParam> listByAreaRange2VO(Integer low, Integer high, String username);
+    HouseVO listByAddress2VO(String Address, String username, long current, long size);
 
-    List<HouseParam> listByPriceRange2VO(Integer low, Integer high, String username);
+    HouseVO listByAreaRange2VO(Integer low, Integer high, String username, long current, long size);
 
-    List<HouseParam> listByStatus2VO(Integer status, String username);
+    HouseVO listByPriceRange2VO(Integer low, Integer high, String username, long current, long size);
+
+    HouseVO listByStatus2VO(Integer status, String username, long current, long size);
 
     String getAddressById(Long id);
+
+    List<HouseOptionsVO> getHouseOptions(String username, String address);
 }

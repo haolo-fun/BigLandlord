@@ -3,10 +3,12 @@ package fun.haolo.bigLandlord.db.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import fun.haolo.bigLandlord.db.entity.Deposit;
+import fun.haolo.bigLandlord.db.entity.Tenant;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.mapper.DepositMapper;
 import fun.haolo.bigLandlord.db.service.IDepositService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import fun.haolo.bigLandlord.db.service.ITenantService;
 import fun.haolo.bigLandlord.db.service.IUserService;
 import fun.haolo.bigLandlord.db.utils.DepositStatusConstant;
 import fun.haolo.bigLandlord.db.utils.SNUtil;
@@ -37,11 +39,31 @@ public class DepositServiceImpl extends ServiceImpl<DepositMapper, Deposit> impl
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private ITenantService tenantService;
+
     @Override
     public Deposit getBySn(String sn) {
         QueryWrapper<Deposit> wrapper = new QueryWrapper<>();
         wrapper.eq("deposit_sn", sn);
         return getOne(wrapper);
+    }
+
+    @Override
+    public DepositVO getBySnToVO(String username, String sn) {
+        Long userId = userService.getUserIdByUsername(username);
+        DepositVO depositVO = new DepositVO();
+        List<DepositDTO> list = new ArrayList<>();
+        Deposit deposit = getBySn(sn);
+        if (deposit == null) return depositVO;
+        if (!deposit.getUserId().equals(userId)) return depositVO;
+        DepositDTO depositDTO = new DepositDTO();
+        BeanUtils.copyProperties(deposit, depositDTO);
+        depositDTO.setName(tenantService.getNameById(depositDTO.getTenantId()));
+        list.add(depositDTO);
+        depositVO.setList(list);
+        depositVO.setTotal(1L);
+        return depositVO;
     }
 
     @Override
@@ -104,7 +126,7 @@ public class DepositServiceImpl extends ServiceImpl<DepositMapper, Deposit> impl
 
     private DepositVO QueryListByWrapper2VO(long current, long size, QueryWrapper<Deposit> wrapper) {
         Page<Deposit> depositPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
-        long pages = depositPage.getPages();
+        long total = depositPage.getTotal();
         List<Deposit> deposits = depositPage.getRecords();
         ArrayList<DepositDTO> depositDTOS = new ArrayList<>();
         for (Deposit deposit : deposits) {
@@ -116,11 +138,12 @@ public class DepositServiceImpl extends ServiceImpl<DepositMapper, Deposit> impl
             depositDTO.setPayId(deposit.getPayId());
             depositDTO.setPayTime(deposit.getPayTime());
             depositDTO.setCreateTime(deposit.getCreateTime());
+            depositDTO.setName(tenantService.getById(depositDTO.getTenantId()).getName());
             depositDTOS.add(depositDTO);
         }
         DepositVO depositVO = new DepositVO();
         depositVO.setList(depositDTOS);
-        depositVO.setPage(pages);
+        depositVO.setTotal(total);
         return depositVO;
     }
 }

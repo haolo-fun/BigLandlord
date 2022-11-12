@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author haolo
  * @since 2022-10-18
  */
-public interface OrderKeyMapper extends BaseMapper<OrderAdditional> {
+public interface OrderAdditionalMapper extends BaseMapper<OrderAdditional> {
 
 }

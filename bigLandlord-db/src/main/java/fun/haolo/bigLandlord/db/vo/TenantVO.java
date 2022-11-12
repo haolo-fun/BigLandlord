@@ -1,23 +1,23 @@
 package fun.haolo.bigLandlord.db.vo;
 
-import fun.haolo.bigLandlord.db.dto.DepositDTO;
+import fun.haolo.bigLandlord.db.dto.TenantDTO;
+import fun.haolo.bigLandlord.db.param.TenantParam;
 
 import java.util.List;
 
 /**
  * @author haolo
- * @since 2022-10-30 14:56
+ * @since 2022-11-03 15:15
  */
-public class DepositVO {
-    private List<DepositDTO> list;
-
+public class TenantVO {
+    private List<TenantDTO> list;
     private Long total;
 
-    public List<DepositDTO> getList() {
+    public List<TenantDTO> getList() {
         return list;
     }
 
-    public void setList(List<DepositDTO> list) {
+    public void setList(List<TenantDTO> list) {
         this.list = list;
     }
 
@@ -31,7 +31,7 @@ public class DepositVO {
 
     @Override
     public String toString() {
-        return "DepositVO{" +
+        return "TenantVO{" +
                 "list=" + list +
                 ", total=" + total +
                 '}';

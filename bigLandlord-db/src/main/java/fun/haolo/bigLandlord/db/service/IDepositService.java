@@ -18,6 +18,8 @@ public interface IDepositService extends IService<Deposit> {
 
     Deposit getBySn(String sn);
 
+    DepositVO getBySnToVO(String username, String sn);
+
     /**
      * 初始化押金单
      *

@@ -1,31 +1,29 @@
 package fun.haolo.bigLandlord.db.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author haolo
  * @since 2022-10-18
  */
-@TableName("bl_order_key")
-@ApiModel(value = "OrderKey对象", description = "租单内容表")
+@TableName("bl_order_additional")
+@ApiModel(value = "OrderAdditional对象", description = "租单内容表")
 public class OrderAdditional implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     @ApiModelProperty("租单表id")
@@ -33,11 +31,11 @@ public class OrderAdditional implements Serializable {
     private Long orderId;
 
     @ApiModelProperty("内容，如管理费，水费，电费，等等")
-    @TableField("key")
+    @TableField("`key`")
     private String key;
 
     @ApiModelProperty("单价")
-    @TableField("value")
+    @TableField("`value`")
     private BigDecimal value;
 
     @ApiModelProperty("数量")
@@ -136,15 +134,15 @@ public class OrderAdditional implements Serializable {
     @Override
     public String toString() {
         return "OrderKey{" +
-            "id = " + id +
-            ", orderId = " + orderId +
-            ", key = " + key +
-            ", value = " + value +
-            ", count = " + count +
-            ", remark = " + remark +
-            ", createTime = " + createTime +
-            ", updateTime = " + updateTime +
-            ", deleted = " + deleted +
-        "}";
+                "id = " + id +
+                ", orderId = " + orderId +
+                ", key = " + key +
+                ", value = " + value +
+                ", count = " + count +
+                ", remark = " + remark +
+                ", createTime = " + createTime +
+                ", updateTime = " + updateTime +
+                ", deleted = " + deleted +
+                "}";
     }
 }

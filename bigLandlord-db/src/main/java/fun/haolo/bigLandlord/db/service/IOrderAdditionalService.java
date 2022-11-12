@@ -2,6 +2,9 @@ package fun.haolo.bigLandlord.db.service;
 
 import fun.haolo.bigLandlord.db.entity.OrderAdditional;
 import com.baomidou.mybatisplus.extension.service.IService;
+import fun.haolo.bigLandlord.db.vo.OrderAdditionalVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderAdditionalService extends IService<OrderAdditional> {
 
+    List<OrderAdditionalVO> getListByOrderId(Long orderId);
 }

@@ -3,6 +3,7 @@ package fun.haolo.bigLandlord.db.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import fun.haolo.bigLandlord.db.entity.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
+import fun.haolo.bigLandlord.db.dto.OrderDTO;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 
 import java.util.List;
@@ -21,5 +22,5 @@ public interface IOrderService extends IService<Order> {
 
     Order getOrderBySn(String sn);
 
-    List<OrderVO> selectPage(long current, long size, QueryWrapper<Order> queryWrapper);
+    OrderVO selectPage(long current, long size, QueryWrapper<Order> queryWrapper);
 }

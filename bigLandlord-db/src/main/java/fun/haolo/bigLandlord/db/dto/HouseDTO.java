@@ -1,5 +1,6 @@
-package fun.haolo.bigLandlord.db.param;
+package fun.haolo.bigLandlord.db.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.math.BigDecimal;
@@ -7,10 +8,9 @@ import java.time.LocalDate;
 
 /**
  * @author haolo
- * @since 2022-10-21 15:38
+ * @since 2022-11-04 12:36
  */
-public class HouseParam {
-
+public class HouseDTO {
     @ApiModelProperty("房屋id")
     private Long id;
 
@@ -28,6 +28,16 @@ public class HouseParam {
 
     @ApiModelProperty("房屋状态（空闲->0，已租->1）")
     private Integer status;
+
+    @ApiModelProperty("当前租客id")
+    private Long tenantId;
+
+    @ApiModelProperty("当前租客姓名")
+    private String tenantName;
+
+    @ApiModelProperty("到期日期")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dueDate;
 
     public Long getId() {
         return id;
@@ -77,15 +87,27 @@ public class HouseParam {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "HouseParam{" +
-                "id=" + id +
-                ", address='" + address + '\'' +
-                ", area=" + area +
-                ", deposit=" + deposit +
-                ", price=" + price +
-                ", status=" + status +
-                '}';
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public String getTenantName() {
+        return tenantName;
+    }
+
+    public void setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 }

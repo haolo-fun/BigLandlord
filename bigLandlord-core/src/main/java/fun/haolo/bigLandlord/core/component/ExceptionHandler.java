@@ -1,5 +1,7 @@
 package fun.haolo.bigLandlord.core.component;
 
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.api.ResponseResult;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 public class ExceptionHandler {
 
     @Autowired
-    HttpServletResponse response;
+    private HttpServletResponse response;
+
+    private static final Log log = LogFactory.get();
 
     @org.springframework.web.bind.annotation.ExceptionHandler(value = UnauthorizedException.class)
     public ResponseResult<String> unauthorizedHandler(UnauthorizedException e) {
@@ -26,6 +30,11 @@ public class ExceptionHandler {
     @org.springframework.web.bind.annotation.ExceptionHandler(value = Exception.class)
     public ResponseResult<String> errorHandler(Exception e) {
         response.setStatus(500);
+        if (e.getMessage()==null){
+            log.error(e);
+        }else {
+            log.error(e.getMessage());
+        }
         return ResponseResult.failed(e.getMessage());
     }
 }

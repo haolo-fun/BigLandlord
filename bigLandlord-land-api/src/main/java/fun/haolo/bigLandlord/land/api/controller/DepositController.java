@@ -115,4 +115,12 @@ public class DepositController {
         return ResponseResult.success(depositVO);
     }
 
+    @GetMapping("/list/{sn}")
+    @ApiOperation(value = "根据押金单号获取押金单")
+    public ResponseResult<DepositVO> listByTenantId(@PathVariable String sn) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        DepositVO depositVO = depositService.getBySnToVO(userDetails.getUsername(), sn);
+        return ResponseResult.success(depositVO);
+    }
+
 }

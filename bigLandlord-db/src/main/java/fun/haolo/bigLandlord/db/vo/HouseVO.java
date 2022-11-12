@@ -1,22 +1,22 @@
 package fun.haolo.bigLandlord.db.vo;
 
-import fun.haolo.bigLandlord.db.dto.OrderDTO;
+import fun.haolo.bigLandlord.db.dto.HouseDTO;
 
 import java.util.List;
 
 /**
  * @author haolo
- * @since 2022-11-08 17:08
+ * @since 2022-11-04 12:29
  */
-public class OrderVO {
-    private List<OrderDTO> list;
+public class HouseVO {
+    private List<HouseDTO> list;
     private Long total;
 
-    public List<OrderDTO> getList() {
+    public List<HouseDTO> getList() {
         return list;
     }
 
-    public void setList(List<OrderDTO> list) {
+    public void setList(List<HouseDTO> list) {
         this.list = list;
     }
 
