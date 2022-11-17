@@ -7,6 +7,7 @@ import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.dto.SecurityUserDetails;
 import fun.haolo.bigLandlord.core.service.LoginService;
 import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
+import fun.haolo.bigLandlord.db.service.IFinanceService;
 import fun.haolo.bigLandlord.db.service.IUserRoleRelationService;
 import fun.haolo.bigLandlord.db.utils.JwtTokenUtil;
 import fun.haolo.bigLandlord.db.entity.User;
@@ -22,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +52,9 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private IUserRoleRelationService userRoleRelationService;
 
+    @Autowired
+    private IFinanceService financeService;
+
     @Value("${jwt.expiration}")
     private Integer expiration; //单位：秒
 
@@ -70,6 +75,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
+    @Transactional
     public User register(User user) {
         // 查询是否有相同用户名的用户
         User userByUsername = iUserService.getUserByUsername(user.getUsername());
@@ -82,7 +88,10 @@ public class LoginServiceImpl implements LoginService {
         user.setPassword(new BCryptPasswordEncoder().encode(password));
         log.info("注册用户:{}", user.toString());
         // 存入数据库
-        return iUserService.save(user) ? user : null;
+        if(!iUserService.save(user)) throw new RuntimeException("注册失败");
+        // 财务初始化
+        financeService.init(user.getId());
+        return user;
     }
 
     @Override

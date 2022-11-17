@@ -27,7 +27,7 @@ public class Generator {
                     builder.parent("fun.haolo.bigLandlord.db"); // 设置父包名
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("bl_deposit") // 设置需要生成的表名
+                    builder.addInclude("bl_finance") // 设置需要生成的表名
                             .addTablePrefix("bl_") // 设置过滤表前缀
                             .entityBuilder()
 //                            .enableLombok()//开启 lombok 模型
