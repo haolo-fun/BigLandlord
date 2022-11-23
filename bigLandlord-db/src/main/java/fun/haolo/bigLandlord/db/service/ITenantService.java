@@ -36,4 +36,6 @@ public interface ITenantService extends IService<Tenant> {
 
     TenantDTO getById(String username, Long id);
 
+    Long getIdByPhoneNumber(String number);
+
 }

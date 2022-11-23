@@ -1,10 +1,12 @@
 package fun.haolo.bigLandlord.db.service;
 
+import fun.haolo.bigLandlord.db.dto.DepositDTO;
 import fun.haolo.bigLandlord.db.entity.Deposit;
 import com.baomidou.mybatisplus.extension.service.IService;
 import fun.haolo.bigLandlord.db.vo.DepositVO;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * <p>
@@ -80,4 +82,6 @@ public interface IDepositService extends IService<Deposit> {
      * @return DepositVO
      */
     DepositVO listByTenantId(String username, Long tenantId, long current, long size, Boolean desc);
+
+    List<DepositDTO> oneByTenantId(Long tenantId);
 }

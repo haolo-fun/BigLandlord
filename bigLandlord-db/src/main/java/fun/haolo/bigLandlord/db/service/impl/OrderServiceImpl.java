@@ -9,6 +9,7 @@ import fun.haolo.bigLandlord.db.service.IOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import fun.haolo.bigLandlord.db.service.ITenantService;
 import fun.haolo.bigLandlord.db.dto.OrderDTO;
+import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import fun.haolo.bigLandlord.db.vo.OrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,5 +71,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         orderVO.setList(orderDTOList);
         orderVO.setTotal(orderPage.getTotal());
         return orderVO;
+    }
+
+    @Override
+    public List<OrderDTO> oneByTenantId(long tenantId) {
+        QueryWrapper<Order> wrapper = new QueryWrapper<>();
+        wrapper.eq("tenant_id",tenantId);
+//        wrapper.eq("order_status", OrderStatusConstant.HAS_BEEN_ISSUED);
+        wrapper.orderByDesc("id");
+        OrderVO orderVO = selectPage(1, 1, wrapper);
+        return orderVO.getList();
     }
 }

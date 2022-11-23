@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.db.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.math.BigDecimal;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
  */
 public class RunningTallyDTO {
     @ApiModelProperty("0->押金，1->租金")
-    private Short type;
+    private Integer type;
 
     @ApiModelProperty("单号")
     private String sn;
@@ -25,14 +26,18 @@ public class RunningTallyDTO {
     @ApiModelProperty("in or out")
     private String form;
 
+    @ApiModelProperty("备注")
+    private String remark;
+
     @ApiModelProperty("创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
-    public Short getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(Short type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
@@ -66,6 +71,14 @@ public class RunningTallyDTO {
 
     public void setForm(String form) {
         this.form = form;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     public LocalDateTime getCreateTime() {

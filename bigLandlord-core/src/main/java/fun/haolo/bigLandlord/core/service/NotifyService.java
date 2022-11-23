@@ -8,8 +8,8 @@ import com.aliyun.dysmsapi20170525.models.SendSmsResponseBody;
  */
 public interface NotifyService {
 
-    SendSmsResponseBody sendCode(String mobilePhoneNo) throws Exception;
+    SendSmsResponseBody sendCode(String mobilePhoneNo, Integer timeout) throws Exception;
 
-    Boolean checkCode(String mobilePhoneNo,String code);
+    Boolean checkCode(String mobilePhoneNo, String code);
 
 }

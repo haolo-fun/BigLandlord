@@ -48,7 +48,7 @@ public class RunningTallyController {
     }
 
     @GetMapping("/deposit/{current}/{size}")
-    @ApiOperation(value = "获取定金流水")
+    @ApiOperation(value = "获取押金流水")
     public ResponseResult<RunningTallyVO> getByDeposit(@PathVariable long current, @PathVariable long size) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         RunningTallyVO vo = runningTallyService.getByDeposit(userDetails.getUsername(), current, size);

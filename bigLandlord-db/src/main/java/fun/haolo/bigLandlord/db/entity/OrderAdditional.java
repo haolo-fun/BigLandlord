@@ -133,16 +133,16 @@ public class OrderAdditional implements Serializable {
 
     @Override
     public String toString() {
-        return "OrderKey{" +
-                "id = " + id +
-                ", orderId = " + orderId +
-                ", key = " + key +
-                ", value = " + value +
-                ", count = " + count +
-                ", remark = " + remark +
-                ", createTime = " + createTime +
-                ", updateTime = " + updateTime +
-                ", deleted = " + deleted +
-                "}";
+        return "OrderAdditional{" +
+                "id=" + id +
+                ", orderId=" + orderId +
+                ", key='" + key + '\'' +
+                ", value=" + value +
+                ", count=" + count +
+                ", remark='" + remark + '\'' +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", deleted=" + deleted +
+                '}';
     }
 }

@@ -39,7 +39,7 @@ public class LandOrderService {
     private IUserService userService;
 
     @Autowired
-    private IOrderAdditionalService orderKeyService;
+    private IOrderAdditionalService orderAdditionalService;
 
     @Autowired
     private IHouseService houseService;
@@ -109,7 +109,7 @@ public class LandOrderService {
         OrderAdditional orderAdditional = new OrderAdditional();
         BeanUtils.copyProperties(param, orderAdditional);
         orderAdditional.setOrderId(order.getId());
-        orderKeyService.save(orderAdditional);
+        orderAdditionalService.save(orderAdditional);
         updatePrice(order.getId());
     }
 
@@ -124,10 +124,11 @@ public class LandOrderService {
         Long userId = userService.getUserIdByUsername(username);
         OrderAdditional orderAdditional = new OrderAdditional();
         BeanUtils.copyProperties(orderAdditionalVO, orderAdditional);
-        Order order = orderService.getById(orderAdditional.getOrderId());
+        OrderAdditional byId = orderAdditionalService.getById(orderAdditionalVO.getId());
+        Order order = orderService.getById(byId.getOrderId());
         if (!order.getUserId().equals(userId)) throw new UnauthorizedException("这不是你的租单，无法完成此操作");
-        orderKeyService.updateById(orderAdditional);
-        updatePrice(orderAdditional.getOrderId());
+        orderAdditionalService.updateById(orderAdditional);
+        updatePrice(byId.getOrderId());
     }
 
 
@@ -140,10 +141,10 @@ public class LandOrderService {
     @Transactional
     public void delOrderAdditional(String username, Long orderAdditionalId) {
         Long userId = userService.getUserIdByUsername(username);
-        OrderAdditional orderAdditional = orderKeyService.getById(orderAdditionalId);
+        OrderAdditional orderAdditional = orderAdditionalService.getById(orderAdditionalId);
         Order order = orderService.getById(orderAdditional.getOrderId());
         if (!order.getUserId().equals(userId)) throw new UnauthorizedException("这不是你的租单，无法完成此操作");
-        orderKeyService.removeById(orderAdditionalId);
+        orderAdditionalService.removeById(orderAdditionalId);
         updatePrice(order.getId());
     }
 
@@ -271,7 +272,7 @@ public class LandOrderService {
         price = price.add(house.getPrice().multiply(new BigDecimal(order.getCount())));
         QueryWrapper<OrderAdditional> wrapper = new QueryWrapper<>();
         wrapper.eq("order_id", orderId);
-        List<OrderAdditional> list = orderKeyService.list(wrapper);
+        List<OrderAdditional> list = orderAdditionalService.list(wrapper);
         for (OrderAdditional orderAdditional : list) {
             price = price.add(orderAdditional.getValue().multiply(new BigDecimal(orderAdditional.getCount())));
         }

@@ -6,15 +6,17 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author haolo
@@ -33,7 +35,7 @@ public class RunningTally implements Serializable {
     @TableField("user_id")
     private Long userId;
 
-    @ApiModelProperty("单号")
+    @ApiModelProperty("租单或押金单编号")
     @TableField("sn")
     private String sn;
 
@@ -52,6 +54,10 @@ public class RunningTally implements Serializable {
     @ApiModelProperty("in or out")
     @TableField("form")
     private String form;
+
+    @ApiModelProperty("备注")
+    @TableField("remark")
+    private String remark;
 
     @ApiModelProperty("创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
@@ -122,6 +128,14 @@ public class RunningTally implements Serializable {
         this.form = form;
     }
 
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
@@ -156,6 +170,7 @@ public class RunningTally implements Serializable {
                 ", price=" + price +
                 ", balance=" + balance +
                 ", form='" + form + '\'' +
+                ", remark='" + remark + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", deleted=" + deleted +

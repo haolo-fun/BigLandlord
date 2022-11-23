@@ -7,10 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author haolo
@@ -24,11 +21,11 @@ public class NotifyController {
     @Autowired
     private NotifyService notifyService;
 
-    @PostMapping("/sendCode")
+    @PostMapping("/sendCode/{phone}")
     @ApiImplicitParam(name = "phone", value = "手机号", required = true)
     @ApiOperation(value = "发送验证码")
-    public Object sendCode(@RequestBody String phone) throws Exception {
-        SendSmsResponseBody sendSmsResponseBody = notifyService.sendCode(phone);
+    public Object sendCode(@PathVariable String phone) throws Exception {
+        SendSmsResponseBody sendSmsResponseBody = notifyService.sendCode(phone, 10);
         return ResponseResult.success(sendSmsResponseBody.getMessage(), sendSmsResponseBody);
     }
 }

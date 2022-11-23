@@ -23,4 +23,6 @@ public interface IOrderService extends IService<Order> {
     Order getOrderBySn(String sn);
 
     OrderVO selectPage(long current, long size, QueryWrapper<Order> queryWrapper);
+
+    List<OrderDTO> oneByTenantId(long tenantId);
 }

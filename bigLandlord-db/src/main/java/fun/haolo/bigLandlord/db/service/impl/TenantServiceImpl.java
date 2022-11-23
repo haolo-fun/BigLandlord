@@ -116,6 +116,13 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         return tenantDTO;
     }
 
+    @Override
+    public Long getIdByPhoneNumber(String number) {
+        QueryWrapper<Tenant> wrapper = new QueryWrapper<>();
+        wrapper.eq("mobile", number);
+        return getOne(wrapper).getId();
+    }
+
     private TenantVO getListByWrapperToVo(QueryWrapper<Tenant> wrapper, long current, long size) {
         ArrayList<TenantDTO> list = new ArrayList<>();
         Page<Tenant> tenantPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);

@@ -124,6 +124,15 @@ public class DepositServiceImpl extends ServiceImpl<DepositMapper, Deposit> impl
         return QueryListByWrapper2VO(current, size, wrapper);
     }
 
+    @Override
+    public List<DepositDTO> oneByTenantId(Long tenantId){
+        QueryWrapper<Deposit> wrapper = new QueryWrapper<>();
+        wrapper.eq("tenant_id", tenantId);
+        wrapper.orderByDesc("id");
+        DepositVO depositVO = QueryListByWrapper2VO(1, 1, wrapper);
+        return depositVO.getList();
+    }
+
     private DepositVO QueryListByWrapper2VO(long current, long size, QueryWrapper<Deposit> wrapper) {
         Page<Deposit> depositPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
         long total = depositPage.getTotal();

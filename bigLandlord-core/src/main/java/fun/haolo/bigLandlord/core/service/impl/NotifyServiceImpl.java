@@ -30,7 +30,7 @@ public class NotifyServiceImpl implements NotifyService {
     String accessKeySecret;
 
     @Override
-    public SendSmsResponseBody sendCode(String mobilePhoneNo) throws Exception {
+    public SendSmsResponseBody sendCode(String mobilePhoneNo, Integer timeout) throws Exception {
 
         // 生成6位验证码
         StringBuilder code = new StringBuilder();
@@ -39,7 +39,7 @@ public class NotifyServiceImpl implements NotifyService {
         }
 
         // 验证码存入redis，有效期5分钟
-        redisUtil.setCacheObject("AuthCode:" + mobilePhoneNo, new BCryptPasswordEncoder().encode(code), 5, TimeUnit.MINUTES);
+        redisUtil.setCacheObject("AuthCode:" + mobilePhoneNo, new BCryptPasswordEncoder().encode(code), timeout, TimeUnit.MINUTES);
 
         // 发送
         Config config = new Config().setAccessKeyId(accessKeyId).setAccessKeySecret(accessKeySecret);
