@@ -38,4 +38,6 @@ public interface ITenantService extends IService<Tenant> {
 
     Long getIdByPhoneNumber(String number);
 
+    void checkPhone(String phone);
+
 }

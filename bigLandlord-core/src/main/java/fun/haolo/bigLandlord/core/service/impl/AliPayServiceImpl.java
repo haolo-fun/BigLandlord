@@ -11,13 +11,16 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.*;
 import com.alipay.api.response.*;
 import fun.haolo.bigLandlord.core.dto.AliPayDTO;
+import fun.haolo.bigLandlord.core.param.AliPayParam;
 import fun.haolo.bigLandlord.core.service.AliPayService;
 import fun.haolo.bigLandlord.db.entity.Deposit;
 import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
+import fun.haolo.bigLandlord.db.param.PaymentParam;
 import fun.haolo.bigLandlord.db.service.IDepositService;
 import fun.haolo.bigLandlord.db.service.IOrderService;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,7 +84,7 @@ public class AliPayServiceImpl implements AliPayService {
         //订单标题
         model.setSubject(param.getSubject());
         //商家和支付宝签约的产品码
-        model.setProductCode(param.getProduct_code());
+        model.setProductCode("QUICK_WAP_WAY");
         //卖家支付宝用户ID
         model.setSellerId(sellerId);
         model.setQuitUrl(param.getQuit_url());
@@ -90,6 +93,31 @@ public class AliPayServiceImpl implements AliPayService {
         request.setNotifyUrl(notifyUrl);
         AlipayTradeWapPayResponse response = alipayClient.pageExecute(request, "GET");
 //        System.out.println(response.getBody());
+        if (!response.isSuccess()) {
+            throw new RuntimeException("支付接口调用失败，原因：" + response.getSubCode() + ":" + response.getSubMsg());
+        }
+        return response;
+    }
+
+    @Override
+    public AlipayTradePagePayResponse alipayTradePagePay(AliPayDTO param) throws AlipayApiException {
+        AlipayConfig alipayConfig = initAlipayConfig();
+        AlipayClient alipayClient = new DefaultAlipayClient(alipayConfig);
+        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
+        AlipayTradePagePayModel model = new AlipayTradePagePayModel();
+        //商户订单号
+        model.setOutTradeNo(param.getOut_trade_no());
+        //订单总金额
+        model.setTotalAmount(param.getTotal_amount());
+        //订单标题
+        model.setSubject(param.getSubject());
+        //商家和支付宝签约的产品码
+        model.setProductCode("FAST_INSTANT_TRADE_PAY");
+        //卖家支付宝用户ID
+        request.setBizModel(model);
+        //异步通知
+        request.setNotifyUrl(notifyUrl);
+        AlipayTradePagePayResponse response = alipayClient.pageExecute(request, "GET");
         if (!response.isSuccess()) {
             throw new RuntimeException("支付接口调用失败，原因：" + response.getSubCode() + ":" + response.getSubMsg());
         }
@@ -166,36 +194,25 @@ public class AliPayServiceImpl implements AliPayService {
         }
     }
 
+
     @Override
-    public AlipayTradeWapPayResponse payDeposit(String depositSn, boolean isPhone, String quitUrl) throws AlipayApiException {
-        Deposit deposit = depositService.getBySn(depositSn);
-        AliPayDTO alipayDTO = new AliPayDTO();
-        alipayDTO.setOut_trade_no(deposit.getDepositSn());
-        alipayDTO.setTotal_amount(deposit.getDeposit().toString());
-        alipayDTO.setSubject("房屋押金");
-        if (isPhone) {
-            alipayDTO.setProduct_code("QUICK_WAP_WAY");
-        } else {
-            alipayDTO.setProduct_code("FAST_INSTANT_TRADE_PAY");
-        }
-        alipayDTO.setQuit_url(quitUrl);
-        return alipayTradeWapPay(alipayDTO);
+    public AlipayTradePagePayResponse payDepositByPC(AliPayParam param) throws AlipayApiException {
+        return alipayTradePagePay(initDepositAlipayDTO(param));
     }
 
     @Override
-    public AlipayTradeWapPayResponse payOrder(String orderSn, boolean isPhone, String quitUrl) throws AlipayApiException {
-        Order order = orderService.getOrderBySn(orderSn);
-        AliPayDTO alipayDTO = new AliPayDTO();
-        alipayDTO.setOut_trade_no(order.getOrderSn());
-        alipayDTO.setTotal_amount(order.getPrice().toString());
-        alipayDTO.setSubject("房屋租单" + order.getOrderSn());
-        if (isPhone) {
-            alipayDTO.setProduct_code("QUICK_WAP_WAY");
-        } else {
-            alipayDTO.setProduct_code("FAST_INSTANT_TRADE_PAY");
-        }
-        alipayDTO.setQuit_url(quitUrl);
-        return alipayTradeWapPay(alipayDTO);
+    public AlipayTradeWapPayResponse payDepositByPhone(AliPayParam param) throws AlipayApiException {
+        return alipayTradeWapPay(initDepositAlipayDTO(param));
+    }
+
+    @Override
+    public AlipayTradePagePayResponse payOrderByPC(AliPayParam param) throws AlipayApiException {
+        return alipayTradePagePay(initOrderAlipayDTO(param));
+    }
+
+    @Override
+    public AlipayTradeWapPayResponse payOrderByPhone(AliPayParam param) throws AlipayApiException {
+        return alipayTradeWapPay(initOrderAlipayDTO(param));
     }
 
     @Override
@@ -210,7 +227,7 @@ public class AliPayServiceImpl implements AliPayService {
 
     @Override
     public String notifyHandle(HttpServletRequest request) throws AlipayApiException {
-        log.debug("alipay: " + request.toString());
+        log.info("alipay: " + request.getParameterMap());
         // 预处理支付宝发来的请求
         HashMap<String, String> params = new HashMap<>();
         Map<String, String[]> requestParams = request.getParameterMap();
@@ -225,13 +242,15 @@ public class AliPayServiceImpl implements AliPayService {
         }
 
         // 验签
-        log.debug("v2params: " + params);
-        boolean signVerified = AlipaySignature.rsaCheckV2(params, publicKey, charset, signType);
+        log.info("v2params: " + params);
+        boolean signVerified = AlipaySignature.rsaCheckV1(params, publicKey, charset, signType);
 
         if (signVerified) {
             // 执行验签成功后的逻辑
+            log.info("signVerified true");
             String trade_status = params.get("trade_status");
             if (trade_status.equals("TRADE_SUCCESS")) {
+                log.info("trade_status TRADE_SUCCESS");
                 String trade_no = params.get("trade_no");//支付宝交易号
                 String out_trade_no = params.get("out_trade_no");//商户订单号
                 String subject = params.get("subject");
@@ -239,7 +258,7 @@ public class AliPayServiceImpl implements AliPayService {
                 DateTimeFormatter timeDtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 //字符串转LocalDateTime
                 LocalDateTime payTime = LocalDateTime.parse(gmt_payment, timeDtf);
-                if (subject.equals("房屋押金")) {
+                if (subject.equals("deposit")) {
                     // 押金逻辑
                     Deposit depositBySn = depositService.getBySn(out_trade_no);
                     Deposit deposit = new Deposit();
@@ -254,12 +273,14 @@ public class AliPayServiceImpl implements AliPayService {
                     order.setId(orderService.getOrderIdBySn(out_trade_no));
                     order.setPayId(trade_no);
                     order.setPayTime(payTime);
+                    order.setOrderStatus(OrderStatusConstant.HAVE_TO_PAY);
                     orderService.updateById(order);
                     log.info("支付宝异步通知：房屋租单" + out_trade_no + ",交易号" + trade_no + "，于" + gmt_payment + "完成支付");
                 }
             }
             return "success";
         }
+        log.info("验签失败：" + params.get("subject"));
         return "fail";
     }
 
@@ -273,5 +294,25 @@ public class AliPayServiceImpl implements AliPayService {
         alipayConfig.setCharset(charset);
         alipayConfig.setSignType(signType);
         return alipayConfig;
+    }
+
+    private AliPayDTO initOrderAlipayDTO(AliPayParam param) {
+        Order order = orderService.getOrderBySn(param.getSn());
+        AliPayDTO alipayDTO = new AliPayDTO();
+        alipayDTO.setOut_trade_no(order.getOrderSn());
+        alipayDTO.setTotal_amount(order.getPrice().toString());
+        alipayDTO.setSubject("rent" + order.getOrderSn());
+        alipayDTO.setQuit_url(param.getQuitUrl());
+        return alipayDTO;
+    }
+
+    private AliPayDTO initDepositAlipayDTO(AliPayParam param) {
+        Deposit deposit = depositService.getBySn(param.getSn());
+        AliPayDTO alipayDTO = new AliPayDTO();
+        alipayDTO.setOut_trade_no(deposit.getDepositSn());
+        alipayDTO.setTotal_amount(deposit.getDeposit().toString());
+        alipayDTO.setSubject("deposit");
+        alipayDTO.setQuit_url(param.getQuitUrl());
+        return alipayDTO;
     }
 }

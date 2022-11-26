@@ -10,6 +10,10 @@ public interface NotifyService {
 
     SendSmsResponseBody sendCode(String mobilePhoneNo, Integer timeout) throws Exception;
 
-    Boolean checkCode(String mobilePhoneNo, String code);
+    SendSmsResponseBody sendCodeToTenant(String mobilePhoneNo, Integer timeout) throws Exception;
+
+    Boolean checkCode(String mobilePhoneNo, String code, String key);
+
+    String creatAndSaveCode(String mobilePhoneNo, Integer timeout, String key);
 
 }

@@ -41,8 +41,10 @@ public class PaymentService {
     private IOrderAdditionalService orderAdditionalService;
 
     public PaymentVO getPaymentMsg(String phoneNumber, String code) {
+        // 验证号码有效性
+        tenantService.checkPhone(phoneNumber);
         // 验证code有效性
-        if (!notifyService.checkCode(phoneNumber, code)) {
+        if (!notifyService.checkCode(phoneNumber, code, "tenantCode")) {
             throw new RuntimeException("验证码错误或已失效");
         }
         // 获取租客id
@@ -51,7 +53,7 @@ public class PaymentService {
         PaymentVO paymentVO = new PaymentVO();
         List<DepositDTO> depositList = depositService.oneByTenantId(tenantId);
         List<OrderDTO> orderList = orderService.oneByTenantId(tenantId);
-        if (!orderList.isEmpty()){
+        if (!orderList.isEmpty()) {
             List<OrderAdditionalVO> orderAdditionalList = orderAdditionalService.getListByOrderId(orderService.getOrderIdBySn(orderList.get(0).getOrderSn()));
             paymentVO.setOrderAdditionalList(orderAdditionalList);
         }

@@ -48,15 +48,14 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     @Override
     public Boolean remove(Long id, String userName) {
         Tenant tenant = getById(id);
-        // todo 修改这个类下的Assert为自定义异常
-        Assert.state(userService.getUserIdByUsername(userName).equals(tenant.getUserId()), "这不是你的租客，无法完成此操作");
+        if (!userService.getUserIdByUsername(userName).equals(tenant.getUserId())) throw new UnauthorizedException("这不是你的租客，无法完成此操作");
         return removeById(tenant);
     }
 
     @Override
     public Tenant updateByVo(TenantParam param, String userName) {
         Tenant tenant = getById(param.getId());
-        Assert.state(userService.getUserIdByUsername(userName).equals(tenant.getUserId()), "这不是你的租客，无法完成此操作");
+        if (!userService.getUserIdByUsername(userName).equals(tenant.getUserId())) throw new UnauthorizedException("这不是你的租客，无法完成此操作");
         if (param.getIdcard().isEmpty()) {
             BeanUtils.copyProperties(param, tenant, "id", "idcard");
         } else {
@@ -106,10 +105,9 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
     }
 
     @Override
-    public TenantDTO getById(String username, Long id) {
+    public TenantDTO getById(String userName, Long id) {
         Tenant tenant = getById(id);
-        if (!userService.getUserIdByUsername(username).equals(tenant.getUserId()))
-            throw new UnauthorizedException("这不是你的租客，无法完成此操作");
+        if (!userService.getUserIdByUsername(userName).equals(tenant.getUserId())) throw new UnauthorizedException("这不是你的租客，无法完成此操作");
         TenantDTO tenantDTO = new TenantDTO();
         BeanUtils.copyProperties(tenant, tenantDTO);
         tenantDTO.setIdcard(DesensitizedUtil.idCardNum(tenant.getIdcard(), 2, 3));
@@ -123,6 +121,13 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
         return getOne(wrapper).getId();
     }
 
+    @Override
+    public void checkPhone(String phone) {
+        QueryWrapper<Tenant> wrapper = new QueryWrapper<>();
+        wrapper.eq("mobile", phone);
+        if (count(wrapper) == 0) throw new RuntimeException("手机号不存在");
+    }
+
     private TenantVO getListByWrapperToVo(QueryWrapper<Tenant> wrapper, long current, long size) {
         ArrayList<TenantDTO> list = new ArrayList<>();
         Page<Tenant> tenantPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
@@ -132,7 +137,8 @@ public class TenantServiceImpl extends ServiceImpl<TenantMapper, Tenant> impleme
             TenantDTO tenantDTO = new TenantDTO();
             tenantDTO.setId(record.getId());
             tenantDTO.setName(record.getName());
-            tenantDTO.setIdcard(DesensitizedUtil.idCardNum(record.getIdcard(), 2, 3));
+//            tenantDTO.setIdcard(DesensitizedUtil.idCardNum(record.getIdcard(), 2, 3));
+            tenantDTO.setIdcard(record.getIdcard());
             tenantDTO.setMobile(record.getMobile());
             tenantDTO.setCreatTime(record.getCreateTime());
             list.add(tenantDTO);

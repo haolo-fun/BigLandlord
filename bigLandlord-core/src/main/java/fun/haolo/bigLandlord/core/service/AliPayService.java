@@ -3,6 +3,7 @@ package fun.haolo.bigLandlord.core.service;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.response.*;
 import fun.haolo.bigLandlord.core.dto.AliPayDTO;
+import fun.haolo.bigLandlord.core.param.AliPayParam;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,6 +20,14 @@ public interface AliPayService {
      * @throws AlipayApiException
      */
     AlipayTradeWapPayResponse alipayTradeWapPay(AliPayDTO aliPayDTO) throws AlipayApiException;
+
+    /**
+     * PC网站支付接口
+     * @param param
+     * @return AlipayTradePagePayResponse
+     * @throws AlipayApiException
+     */
+    AlipayTradePagePayResponse alipayTradePagePay(AliPayDTO param) throws AlipayApiException;
 
     /**
      * 统一收单线下交易查询
@@ -59,18 +68,22 @@ public interface AliPayService {
     /**
      * 根据押金金额付款
      *
-     * @param depositSn 押金单编号
      * @return AlipayTradeWapPayResponse
      */
-    AlipayTradeWapPayResponse payDeposit(String depositSn, boolean isPhone, String quitUrl) throws AlipayApiException;
+    AlipayTradePagePayResponse payDepositByPC(AliPayParam param) throws AlipayApiException;
+
+    AlipayTradeWapPayResponse payDepositByPhone(AliPayParam param) throws AlipayApiException;
 
     /**
      * 根据租单付款
      *
-     * @param orderSn 租单号
      * @return AlipayTradeWapPayResponse
      */
-    AlipayTradeWapPayResponse payOrder(String orderSn, boolean isPhone, String quitUrl) throws AlipayApiException;
+    AlipayTradePagePayResponse payOrderByPC(AliPayParam param) throws AlipayApiException;
+
+    AlipayTradeWapPayResponse payOrderByPhone(AliPayParam param) throws AlipayApiException;
+
+
 
     /**
      * 押金退款接口（已验证退款操作是否合法）

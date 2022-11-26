@@ -25,7 +25,15 @@ public class NotifyController {
     @ApiImplicitParam(name = "phone", value = "手机号", required = true)
     @ApiOperation(value = "发送验证码")
     public Object sendCode(@PathVariable String phone) throws Exception {
-        SendSmsResponseBody sendSmsResponseBody = notifyService.sendCode(phone, 10);
+        SendSmsResponseBody sendSmsResponseBody = notifyService.sendCode(phone, 5);
+        return ResponseResult.success(sendSmsResponseBody.getMessage(), sendSmsResponseBody);
+    }
+
+    @PostMapping("/sendCode/tenant/{phone}")
+    @ApiImplicitParam(name = "phone", value = "手机号", required = true)
+    @ApiOperation(value = "给租户发送验证码")
+    public Object sandCodeToTenant(@PathVariable String phone) throws Exception {
+        SendSmsResponseBody sendSmsResponseBody = notifyService.sendCodeToTenant(phone, 10);
         return ResponseResult.success(sendSmsResponseBody.getMessage(), sendSmsResponseBody);
     }
 }

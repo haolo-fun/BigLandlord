@@ -17,9 +17,6 @@ public class AliPayDTO {
     @ApiModelProperty("订单标题。 注意：不可使用特殊字符，如 /，=，& 等。")
     private String subject;
 
-    @ApiModelProperty("商家和支付宝签约的产品码。默认值为 QUICK_WAP_WAY。")
-    private String product_code;
-
     @ApiModelProperty("用户付款中途退出返回商户网站的地址")
     private String quit_url;
 
@@ -45,14 +42,6 @@ public class AliPayDTO {
 
     public void setSubject(String subject) {
         this.subject = subject;
-    }
-
-    public String getProduct_code() {
-        return product_code;
-    }
-
-    public void setProduct_code(String product_code) {
-        this.product_code = product_code;
     }
 
     public String getQuit_url() {

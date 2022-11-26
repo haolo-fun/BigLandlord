@@ -57,6 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/login", "/user/register").permitAll()
                 .antMatchers("/notify/sendCode/**").permitAll()
                 .antMatchers("/payment/msg").permitAll()
+                .antMatchers("/pay/**").permitAll()
                 .antMatchers("/swagger-resources/**", "/api-docs", "/doc.html", "/api-docs-ext", "/webjars/**", "/v2/**", "/swagger-ui.html", "/favicon.ico").permitAll()
                 // 跨域请求会先进行一次options请求
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
