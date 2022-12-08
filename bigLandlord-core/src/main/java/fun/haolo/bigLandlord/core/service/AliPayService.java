@@ -55,6 +55,10 @@ public interface AliPayService {
      */
     AlipayTradeRefundResponse alipayTradeRefund(String refund_amount, String trade_no) throws AlipayApiException;
 
+    void depositRefund(String username, String depositSn, String refund_amount) throws AlipayApiException;
+
+    void orderRefund(String username, String OrderSn, String refund_amount) throws AlipayApiException;
+
     /**
      * 统一收单交易退款查询
      *
@@ -82,19 +86,6 @@ public interface AliPayService {
     AlipayTradePagePayResponse payOrderByPC(AliPayParam param) throws AlipayApiException;
 
     AlipayTradeWapPayResponse payOrderByPhone(AliPayParam param) throws AlipayApiException;
-
-
-
-    /**
-     * 押金退款接口（已验证退款操作是否合法）
-     *
-     * @param refund_amount 退款金额。该金额不能大于订单金额
-     * @param deposit_sn    押金单号
-     * @param username      房东用户名
-     * @return AlipayTradeRefundResponse
-     * @throws AlipayApiException
-     */
-    AlipayTradeRefundResponse alipayTradeRefund(String refund_amount, String deposit_sn, String username) throws AlipayApiException;
 
     /**
      * 异步回调处理器

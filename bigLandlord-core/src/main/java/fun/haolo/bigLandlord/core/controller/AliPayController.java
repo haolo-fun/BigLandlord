@@ -64,17 +64,33 @@ public class AliPayController {
         return ResponseResult.success(alipayTradeWapPayResponse.getBody());
     }
 
-    @GetMapping("/TradeQuery/{trade_no}")
+    @GetMapping("/tradeQuery/{trade_no}")
     @ApiOperation(value = "交易查询")
     public ResponseResult<AlipayTradeQueryResponse> alipayTradeQuery(@PathVariable String trade_no) throws AlipayApiException {
         return ResponseResult.success(aliPayService.alipayTradeQuery(trade_no));
     }
 
-    @PutMapping("/TradeRefund/{refund_amount}/{deposit_sn}")
-    @ApiOperation(value = "退款")
-    public ResponseResult<AlipayTradeRefundResponse> alipayTradeRefund(@PathVariable String refund_amount, @PathVariable String deposit_sn) throws AlipayApiException {
+//    @PutMapping("/TradeRefund/{refund_amount}/{deposit_sn}")
+//    @ApiOperation(value = "退款")
+//    public ResponseResult<AlipayTradeRefundResponse> alipayTradeRefund(@PathVariable String refund_amount, @PathVariable String deposit_sn) throws AlipayApiException {
+//        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        return ResponseResult.success(aliPayService.alipayTradeRefund(refund_amount, deposit_sn, userDetails.getUsername()));
+//    }
+
+    @PutMapping("/tradeRefund/deposit/{refund_amount}/{deposit_sn}")
+    @ApiOperation(value = "押金退款")
+    public ResponseResult<Object> depositRefund(@PathVariable String refund_amount, @PathVariable String deposit_sn) throws AlipayApiException {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseResult.success(aliPayService.alipayTradeRefund(refund_amount, deposit_sn, userDetails.getUsername()));
+        aliPayService.depositRefund(userDetails.getUsername(), deposit_sn, refund_amount);
+        return ResponseResult.success();
+    }
+
+    @PutMapping("/tradeRefund/order/{refund_amount}/{order_sn}")
+    @ApiOperation(value = "押金退款")
+    public ResponseResult<Object> orderRefund(@PathVariable String refund_amount, @PathVariable String order_sn) throws AlipayApiException {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        aliPayService.orderRefund(userDetails.getUsername(), order_sn, refund_amount);
+        return ResponseResult.success();
     }
 
     @PostMapping("/notify")
@@ -83,6 +99,5 @@ public class AliPayController {
         log.info(request.toString());
         return aliPayService.notifyHandle(request);
     }
-
 }
 

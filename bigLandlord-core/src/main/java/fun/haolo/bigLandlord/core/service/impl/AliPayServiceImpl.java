@@ -14,21 +14,27 @@ import fun.haolo.bigLandlord.core.dto.AliPayDTO;
 import fun.haolo.bigLandlord.core.param.AliPayParam;
 import fun.haolo.bigLandlord.core.service.AliPayService;
 import fun.haolo.bigLandlord.db.entity.Deposit;
+import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.param.PaymentParam;
 import fun.haolo.bigLandlord.db.service.IDepositService;
+import fun.haolo.bigLandlord.db.service.IHouseService;
 import fun.haolo.bigLandlord.db.service.IOrderService;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.utils.DepositStatusConstant;
 import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +53,9 @@ public class AliPayServiceImpl implements AliPayService {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private IHouseService houseService;
 
     @Value("${aliyun.pay.app_id}")
     private String appId;
@@ -166,6 +175,7 @@ public class AliPayServiceImpl implements AliPayService {
         AlipayTradeRefundModel model = new AlipayTradeRefundModel();
         model.setRefundAmount(refund_amount);
         model.setTradeNo(trade_no);
+        model.setOutRequestNo(String.valueOf(System.currentTimeMillis()));
         request.setBizModel(model);
         AlipayTradeRefundResponse response = alipayClient.execute(request);
         System.out.println(response.getBody());
@@ -174,6 +184,43 @@ public class AliPayServiceImpl implements AliPayService {
         } else {
             throw new RuntimeException("退款接口调用失败，原因：" + response.getSubCode() + ":" + response.getSubMsg());
         }
+    }
+
+    @Override
+    @Transactional
+    public void depositRefund(String username, String depositSn, String refund_amount) throws AlipayApiException {
+        Long userID = userService.getUserIdByUsername(username);
+        Deposit deposit = depositService.getBySn(depositSn);
+        if (!userID.equals(deposit.getUserId())) throw new UnauthorizedException("您无权操作此退款");
+        if (deposit.getPayId()==null) throw new RuntimeException("未付款怎么退款呢？");
+        if (new BigDecimal(refund_amount).compareTo(deposit.getDeposit()) > 0) throw new RuntimeException("退款金额大于支付金额");
+
+        // 更新状态
+        deposit.setStatus(DepositStatusConstant.REFUND);
+        depositService.updateById(deposit);
+
+        // 退款
+        alipayTradeRefund(refund_amount,deposit.getPayId());
+    }
+
+    @Override
+    @Transactional
+    public void orderRefund(String username, String orderSn, String refund_amount) throws AlipayApiException {
+        Long userID = userService.getUserIdByUsername(username);
+        Order order = orderService.getOrderBySn(orderSn);
+        if (!userID.equals(order.getUserId())) throw new UnauthorizedException("您无权操作此退款");
+        if (order.getPayId().isEmpty()) throw new RuntimeException("未付款怎么退款呢？");
+        if (new BigDecimal(refund_amount).compareTo(order.getPrice()) > 0) throw new RuntimeException("退款金额大于支付金额");
+
+        // 更新状态
+        order.setOrderStatus(OrderStatusConstant.REFUND);
+        orderService.updateById(order);
+        House house = houseService.getById(order.getHouseId());
+        house.setStatus(0);
+        houseService.updateById(house);
+
+        // 退款
+        alipayTradeRefund(refund_amount,order.getPayId());
     }
 
     @Override
@@ -213,16 +260,6 @@ public class AliPayServiceImpl implements AliPayService {
     @Override
     public AlipayTradeWapPayResponse payOrderByPhone(AliPayParam param) throws AlipayApiException {
         return alipayTradeWapPay(initOrderAlipayDTO(param));
-    }
-
-    @Override
-    public AlipayTradeRefundResponse alipayTradeRefund(String refund_amount, String deposit_sn, String username) throws AlipayApiException {
-        Deposit deposit = depositService.getBySn(deposit_sn);
-        Long userId = userService.getUserIdByUsername(username);
-        if (deposit.getUserId().equals(userId)) {
-            return alipayTradeRefund(refund_amount, deposit.getPayId());
-        }
-        throw new UnauthorizedException("无法操作此单退款");
     }
 
     @Override
