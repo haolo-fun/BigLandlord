@@ -1,19 +1,28 @@
 package fun.haolo.bigLandlord.db.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import fun.haolo.bigLandlord.db.dto.UserDTO;
 import fun.haolo.bigLandlord.db.entity.Role;
 import fun.haolo.bigLandlord.db.entity.User;
 import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
 import fun.haolo.bigLandlord.db.mapper.UserMapper;
+import fun.haolo.bigLandlord.db.param.UserParam;
 import fun.haolo.bigLandlord.db.service.IRoleService;
 import fun.haolo.bigLandlord.db.service.IUserRoleRelationService;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.utils.RedisUtil;
+import fun.haolo.bigLandlord.db.vo.UserVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author haolo
@@ -28,6 +37,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private IRoleService roleService;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public User getUserByUsername(String username) {
@@ -58,4 +70,85 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return list;
     }
+
+    @Override
+    public UserVO getListToVoByAdmin(long current, long size) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("id");
+        return getToVo(current, size, wrapper);
+    }
+
+    @Override
+    public UserVO getListByUsernameToVoByAdmin(String username) {
+        UserVO userVO = new UserVO();
+        User user = getUserByUsername(username);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(user, userDTO);
+        userVO.setList(userDTOS);
+        userVO.setTotal(1L);
+        return userVO;
+    }
+
+    @Override
+    public void resetPasswordByAdmin(String username) {
+        User user = getUserByUsername(username);
+        if (Objects.isNull(user)) throw new RuntimeException("不要乱来");
+        user.setPassword(new BCryptPasswordEncoder().encode("123456"));
+        updateById(user);
+    }
+
+    @Override
+    public void resetStatusByAdmin(String username) {
+        User user = getUserByUsername(username);
+        if (Objects.isNull(user)) throw new RuntimeException("不要乱来");
+        user.setStatus(user.getStatus() > 0 ? 0 : 1);
+        updateById(user);
+        redisUtil.deleteObjectsByPattern("token:" + username + ":*");
+    }
+
+    @Override
+    @Transactional
+    public void addUserByAdmin(UserParam userParam) {
+        // 查询是否有相同用户名的用户
+        User userByUsername = getUserByUsername(userParam.getUsername());
+        if (Objects.nonNull(userByUsername)) {
+            throw new RuntimeException("该用户名已存在");
+        }
+        User user = new User();
+        user.setUsername(userParam.getUsername());
+        user.setMobile(userParam.getMobile());
+        user.setEmail(userParam.getEmail());
+        user.setNickName(userParam.getNickName());
+        save(user);
+        // todo 添加角色信息
+    }
+
+    @Override
+    public void updateUserByAdmin(UserParam userParam) {
+        if (userParam.getMobile().isEmpty()) throw new RuntimeException("手机号不能为空");
+        User user = getUserByUsername(userParam.getUsername());
+        if (Objects.isNull(user)) throw new RuntimeException("不要乱来");
+        user.setMobile(userParam.getMobile());
+        user.setEmail(userParam.getEmail());
+        user.setNickName(userParam.getNickName());
+        updateById(user);
+    }
+
+
+    private UserVO getToVo(long current, long size, QueryWrapper<User> wrapper) {
+        UserVO userVO = new UserVO();
+        Page<User> userPage = getBaseMapper().selectPage(new Page<>(current, size), wrapper);
+        userVO.setTotal(userPage.getTotal());
+        List<User> users = userPage.getRecords();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            UserDTO userDTO = new UserDTO();
+            BeanUtils.copyProperties(user, userDTO);
+            userDTOS.add(userDTO);
+        }
+        userVO.setList(userDTOS);
+        return userVO;
+    }
+
 }

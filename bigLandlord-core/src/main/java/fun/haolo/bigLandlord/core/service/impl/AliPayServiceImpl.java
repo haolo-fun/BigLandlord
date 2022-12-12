@@ -18,10 +18,7 @@ import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.param.PaymentParam;
-import fun.haolo.bigLandlord.db.service.IDepositService;
-import fun.haolo.bigLandlord.db.service.IHouseService;
-import fun.haolo.bigLandlord.db.service.IOrderService;
-import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.service.*;
 import fun.haolo.bigLandlord.db.utils.DepositStatusConstant;
 import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +54,9 @@ public class AliPayServiceImpl implements AliPayService {
     @Autowired
     private IHouseService houseService;
 
+    @Autowired
+    private IRunningTallyService runningTallyService;
+
     @Value("${aliyun.pay.app_id}")
     private String appId;
     @Value("${aliyun.pay.merchant_private_key}")
@@ -67,8 +67,8 @@ public class AliPayServiceImpl implements AliPayService {
     private String sellerId;
     @Value("${aliyun.pay.notify_url}")
     private String notifyUrl;
-    @Value("${aliyun.pay.return_url}")
-    private String returnUrl;
+    //    @Value("${aliyun.pay.return_url}")
+//    private String returnUrl;
     @Value("${aliyun.pay.sign_type}")
     private String signType;
     @Value("${aliyun.pay.charset}")
@@ -192,7 +192,7 @@ public class AliPayServiceImpl implements AliPayService {
         Long userID = userService.getUserIdByUsername(username);
         Deposit deposit = depositService.getBySn(depositSn);
         if (!userID.equals(deposit.getUserId())) throw new UnauthorizedException("您无权操作此退款");
-        if (deposit.getPayId()==null) throw new RuntimeException("未付款怎么退款呢？");
+        if (deposit.getPayId() == null) throw new RuntimeException("未付款怎么退款呢？");
         if (new BigDecimal(refund_amount).compareTo(deposit.getDeposit()) > 0) throw new RuntimeException("退款金额大于支付金额");
 
         // 更新状态
@@ -200,7 +200,7 @@ public class AliPayServiceImpl implements AliPayService {
         depositService.updateById(deposit);
 
         // 退款
-        alipayTradeRefund(refund_amount,deposit.getPayId());
+        alipayTradeRefund(refund_amount, deposit.getPayId());
     }
 
     @Override
@@ -220,7 +220,7 @@ public class AliPayServiceImpl implements AliPayService {
         houseService.updateById(house);
 
         // 退款
-        alipayTradeRefund(refund_amount,order.getPayId());
+        alipayTradeRefund(refund_amount, order.getPayId());
     }
 
     @Override
@@ -263,6 +263,7 @@ public class AliPayServiceImpl implements AliPayService {
     }
 
     @Override
+    @Transactional
     public String notifyHandle(HttpServletRequest request) throws AlipayApiException {
         log.info("alipay: " + request.getParameterMap());
         // 预处理支付宝发来的请求
@@ -291,6 +292,7 @@ public class AliPayServiceImpl implements AliPayService {
                 String trade_no = params.get("trade_no");//支付宝交易号
                 String out_trade_no = params.get("out_trade_no");//商户订单号
                 String subject = params.get("subject");
+                String receipt_amount = params.get("receipt_amount");
                 String gmt_payment = params.get("gmt_payment");//该笔交易 的买家付款时间。格式为 yyyy-MM-dd HH:mm:ss。
                 DateTimeFormatter timeDtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 //字符串转LocalDateTime
@@ -303,15 +305,24 @@ public class AliPayServiceImpl implements AliPayService {
                     deposit.setPayId(trade_no);
                     deposit.setPayTime(payTime);
                     depositService.updateById(deposit);
+
+                    // 生成押金流水并更新finance
+                    runningTallyService.saveDeposit(depositBySn.getUserId(), out_trade_no, receipt_amount);
+
                     log.info("支付宝异步通知：房屋押金" + out_trade_no + ",交易号" + trade_no + "，于" + gmt_payment + "完成支付");
                 } else {
                     // 租单逻辑
                     Order order = new Order();
-                    order.setId(orderService.getOrderIdBySn(out_trade_no));
+                    Order orderBySn = orderService.getOrderBySn(out_trade_no);
+                    order.setId(orderBySn.getId());
                     order.setPayId(trade_no);
                     order.setPayTime(payTime);
                     order.setOrderStatus(OrderStatusConstant.HAVE_TO_PAY);
                     orderService.updateById(order);
+
+                    // 生成租金流水并更新finance
+                    runningTallyService.saveRent(orderBySn.getUserId(), out_trade_no, receipt_amount);
+
                     log.info("支付宝异步通知：房屋租单" + out_trade_no + ",交易号" + trade_no + "，于" + gmt_payment + "完成支付");
                 }
             }

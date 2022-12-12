@@ -29,6 +29,10 @@
             <groupId>fun.haolo</groupId>
             <artifactId>bigLandlord-land-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fun.haolo</groupId>
+            <artifactId>bigLandlord-admin-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

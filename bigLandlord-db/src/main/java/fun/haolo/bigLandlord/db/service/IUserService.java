@@ -2,6 +2,8 @@ package fun.haolo.bigLandlord.db.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import fun.haolo.bigLandlord.db.entity.User;
+import fun.haolo.bigLandlord.db.param.UserParam;
+import fun.haolo.bigLandlord.db.vo.UserVO;
 
 import java.util.List;
 
@@ -20,5 +22,15 @@ public interface IUserService extends IService<User> {
 
     List<String> getUserPermissionsByUser(User user);
 
+    UserVO getListToVoByAdmin(long current, long size);
 
+    UserVO getListByUsernameToVoByAdmin(String username);
+
+    void resetPasswordByAdmin(String username);
+
+    void resetStatusByAdmin(String username);
+
+    void addUserByAdmin(UserParam userParam);
+
+    void updateUserByAdmin(UserParam userParam);
 }

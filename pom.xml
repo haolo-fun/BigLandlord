@@ -8,6 +8,7 @@
         <module>bigLandlord-core</module>
         <module>bigLandlord-db</module>
         <module>bigLandlord-land-api</module>
+        <module>bigLandlord-admin-api</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -42,6 +43,11 @@
             <dependency>
                 <groupId>fun.haolo</groupId>
                 <artifactId>bigLandlord-land-api</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fun.haolo</groupId>
+                <artifactId>bigLandlord-admin-api</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
         </dependencies>

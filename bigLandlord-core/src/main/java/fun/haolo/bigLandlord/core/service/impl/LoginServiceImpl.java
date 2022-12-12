@@ -89,6 +89,7 @@ public class LoginServiceImpl implements LoginService {
         log.info("注册用户:{}", user.toString());
         // 存入数据库
         if(!iUserService.save(user)) throw new RuntimeException("注册失败");
+        // todo 添加角色信息
         // 财务初始化
         financeService.init(user.getId());
         return user;

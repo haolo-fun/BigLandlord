@@ -53,12 +53,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                // 配置登录接口放行
+                // 配置接口放行
                 .antMatchers("/user/login", "/user/register").permitAll()
                 .antMatchers("/notify/sendCode/**").permitAll()
                 .antMatchers("/payment/msg").permitAll()
                 .antMatchers("/pay/**").permitAll()
                 .antMatchers("/swagger-resources/**", "/api-docs", "/doc.html", "/api-docs-ext", "/webjars/**", "/v2/**", "/swagger-ui.html", "/favicon.ico").permitAll()
+                // 配置权限放行
+                .antMatchers("/admin/**").hasAuthority("admin")
                 // 跨域请求会先进行一次options请求
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 // 测试时全部运行访问
@@ -76,6 +78,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.exceptionHandling()
                 .accessDeniedHandler(restfulAccessDeniedHandler)
                 .authenticationEntryPoint(restAuthenticationEntryPoint);
+
+        http.cors();
     }
 
     @Bean
