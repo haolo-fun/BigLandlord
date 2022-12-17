@@ -85,6 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<UserDTO> userDTOS = new ArrayList<>();
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
+        userDTOS.add(userDTO);
         userVO.setList(userDTOS);
         userVO.setTotal(1L);
         return userVO;

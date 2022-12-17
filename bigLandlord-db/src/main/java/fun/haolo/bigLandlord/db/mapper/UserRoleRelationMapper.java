@@ -2,6 +2,9 @@ package fun.haolo.bigLandlord.db.mapper;
 
 import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import fun.haolo.bigLandlord.db.vo.RoleRelationVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface UserRoleRelationMapper extends BaseMapper<UserRoleRelation> {
 
+    List<RoleRelationVO> getList(long userId);
 }

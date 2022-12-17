@@ -13,4 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IRoleService extends IService<Role> {
 
+    Integer getIdByRoleName(String name);
+
+    boolean hasName(String name);
 }

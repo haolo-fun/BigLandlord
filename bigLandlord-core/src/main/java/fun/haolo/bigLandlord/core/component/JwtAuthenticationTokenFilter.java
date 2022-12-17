@@ -46,7 +46,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             JWT jwt = jwtTokenUtil.getJWTFromToken(token);
             if (jwt != null) {
                 String username = (String) jwt.getPayload("sub");
-                log.info("checking username:{}", username);
+//                log.info("checking username:{}", username);
                 // 判断token是否合法
                 if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null && !jwtTokenUtil.isTokenExpired(jwt)) {
                     // 通过token中的uuid从redis中判断token是否注销
@@ -55,7 +55,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                         // 获取userDetails
                         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                         if (!Objects.isNull(userDetails)) {
-                            log.info("userDetails:{}", userDetails);
+//                            log.info("userDetails:{}", userDetails);
                             // 存入SecurityContextHolder
                             // 获取权限信息封装到Authentication中
                             UsernamePasswordAuthenticationToken authenticationToken =
