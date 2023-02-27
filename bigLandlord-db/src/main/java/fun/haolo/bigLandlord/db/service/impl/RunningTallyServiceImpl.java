@@ -112,18 +112,31 @@ public class RunningTallyServiceImpl extends ServiceImpl<RunningTallyMapper, Run
         wrapper.orderByAsc("id");
         RunningTally old = getOne(wrapper);
         // 根据旧余额计算当前余额
-        BigDecimal newBalance = priceBigDecimal.add(old.getBalance());
+        BigDecimal newBalance = priceBigDecimal.add(old == null ? new BigDecimal(0) : old.getBalance());
         // 添加至流水
         runningTally.setUserId(userId);
         runningTally.setSn(sn);
         runningTally.setType(type);
         runningTally.setPrice(priceBigDecimal);
         runningTally.setBalance(newBalance);
-        runningTally.setForm(priceBigDecimal.signum() == -1 ? "out" : "in");
+        boolean Dignum = priceBigDecimal.signum() == -1;
+        runningTally.setForm(Dignum ? "out" : "in");
         save(runningTally);
         // 更新finance数据
         Finance finance = financeService.getById(userId);
-        finance.setDeposit(newBalance);
+        if (type == 0){
+            if (Dignum) {
+                finance.setDeposit(finance.getDeposit().add(priceBigDecimal));
+            } else {
+                finance.setDeposit(finance.getDeposit().subtract(priceBigDecimal));
+            }
+        }else {
+            if (Dignum) {
+                finance.setRent(finance.getRent().add(priceBigDecimal));
+            } else {
+                finance.setRent(finance.getRent().subtract(priceBigDecimal));
+            }
+        }
         financeService.updateById(finance);
     }
 }

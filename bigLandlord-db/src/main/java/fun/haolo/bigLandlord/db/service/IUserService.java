@@ -28,6 +28,8 @@ public interface IUserService extends IService<User> {
 
     void resetPasswordByAdmin(String username);
 
+    void resetPassword(String username, String password);
+
     void resetStatusByAdmin(String username);
 
     void addUserByAdmin(UserParam userParam);

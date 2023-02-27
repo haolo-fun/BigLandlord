@@ -2,6 +2,7 @@ package fun.haolo.bigLandlord.core.controller;
 
 import fun.haolo.bigLandlord.core.api.ResponseResult;
 import fun.haolo.bigLandlord.core.param.LoginParam;
+import fun.haolo.bigLandlord.core.param.ResetPassWordParam;
 import fun.haolo.bigLandlord.core.param.UserParam;
 import fun.haolo.bigLandlord.core.service.LoginService;
 import fun.haolo.bigLandlord.db.entity.User;
@@ -27,10 +28,10 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/user")
 public class LoginController {
     @Autowired
-    LoginService loginService;
+    private LoginService loginService;
 
     @Autowired
-    HttpServletRequest request;
+    private HttpServletRequest request;
 
     @Value("${jwt.tokenHeader}")
     private String tokenHeader; //token在请求头中的名字
@@ -72,5 +73,13 @@ public class LoginController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserInfoVO userInfoVO = loginService.userInfo(userDetails.getUsername());
         return ResponseResult.success(userInfoVO);
+    }
+
+    @PutMapping("/resetPassword")
+    @ApiOperation("用户修改密码")
+    public ResponseResult<Object> resetPassword(@RequestBody ResetPassWordParam param){
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        loginService.resetPassword(userDetails.getUsername(), param);
+        return ResponseResult.success();
     }
 }

@@ -35,7 +35,7 @@ public class HouseController {
 
     @PostMapping("/add")
     @ApiOperation(value = "添加房源")
-    public ResponseResult<House> add(HouseParam param) {
+    public ResponseResult<House> add(@RequestBody HouseParam param) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         House house = houseService.add(param, userDetails.getUsername());
         return house != null ? ResponseResult.success(house) : ResponseResult.failed();
@@ -51,7 +51,7 @@ public class HouseController {
 
     @PutMapping("/update")
     @ApiOperation(value = "更新房源信息")
-    public ResponseResult<House> update(HouseParam param) {
+    public ResponseResult<House> update(@RequestBody HouseParam param) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         House house = houseService.update(param, userDetails.getUsername());
         return house != null ? ResponseResult.success(house) : ResponseResult.failed();

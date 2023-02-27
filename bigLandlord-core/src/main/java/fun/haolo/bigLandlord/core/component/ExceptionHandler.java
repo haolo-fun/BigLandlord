@@ -29,7 +29,7 @@ public class ExceptionHandler {
 
     @org.springframework.web.bind.annotation.ExceptionHandler(value = Exception.class)
     public ResponseResult<String> errorHandler(Exception e) {
-//        response.setStatus(500);
+        response.setStatus(500);
         if (e.getMessage()==null){
             log.error(e);
         }else {

@@ -5,6 +5,7 @@ import cn.hutool.jwt.JWT;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import fun.haolo.bigLandlord.core.dto.SecurityUserDetails;
+import fun.haolo.bigLandlord.core.param.ResetPassWordParam;
 import fun.haolo.bigLandlord.core.service.LoginService;
 import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
 import fun.haolo.bigLandlord.db.service.IFinanceService;
@@ -88,7 +89,7 @@ public class LoginServiceImpl implements LoginService {
         user.setPassword(new BCryptPasswordEncoder().encode(password));
         log.info("注册用户:{}", user.toString());
         // 存入数据库
-        if(!iUserService.save(user)) throw new RuntimeException("注册失败");
+        if (!iUserService.save(user)) throw new RuntimeException("注册失败");
         // todo 添加角色信息
         // 财务初始化
         financeService.init(user.getId());
@@ -122,5 +123,14 @@ public class LoginServiceImpl implements LoginService {
         userInfoVO.setMobile(DesensitizedUtil.mobilePhone(user.getMobile()));
         userInfoVO.setRoles(roles);
         return userInfoVO;
+    }
+
+    @Override
+    public void resetPassword(String username, ResetPassWordParam resetPassWordParam) {
+        User user = iUserService.getUserByUsername(username);
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        boolean matches = bCryptPasswordEncoder.matches(resetPassWordParam.getOldPw(), user.getPassword());
+        if (!matches) throw new RuntimeException("密码错误，若忘记密码请联系管理员");
+        iUserService.resetPassword(username, resetPassWordParam.getNewPw());
     }
 }

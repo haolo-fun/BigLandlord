@@ -93,9 +93,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void resetPasswordByAdmin(String username) {
+        resetPassword(username,"123456");
+    }
+
+    @Override
+    public void resetPassword(String username, String password) {
         User user = getUserByUsername(username);
         if (Objects.isNull(user)) throw new RuntimeException("不要乱来");
-        user.setPassword(new BCryptPasswordEncoder().encode("123456"));
+        user.setPassword(new BCryptPasswordEncoder().encode(password));
         updateById(user);
     }
 

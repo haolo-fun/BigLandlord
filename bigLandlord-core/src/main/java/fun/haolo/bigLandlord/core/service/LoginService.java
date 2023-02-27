@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.core.service;
 
+import fun.haolo.bigLandlord.core.param.ResetPassWordParam;
 import fun.haolo.bigLandlord.db.entity.User;
 import fun.haolo.bigLandlord.db.vo.UserInfoVO;
 
@@ -30,4 +31,6 @@ public interface LoginService {
     Boolean logoutAll(String token);
 
     UserInfoVO userInfo(String username);
+
+    void resetPassword(String username, ResetPassWordParam resetPassWordParam);
 }

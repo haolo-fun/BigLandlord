@@ -302,6 +302,7 @@ public class AliPayServiceImpl implements AliPayService {
                     Deposit depositBySn = depositService.getBySn(out_trade_no);
                     Deposit deposit = new Deposit();
                     deposit.setId(depositBySn.getId());
+                    deposit.setStatus(DepositStatusConstant.HAVE_TO_PAY);
                     deposit.setPayId(trade_no);
                     deposit.setPayTime(payTime);
                     depositService.updateById(deposit);
@@ -359,7 +360,7 @@ public class AliPayServiceImpl implements AliPayService {
         AliPayDTO alipayDTO = new AliPayDTO();
         alipayDTO.setOut_trade_no(deposit.getDepositSn());
         alipayDTO.setTotal_amount(deposit.getDeposit().toString());
-        alipayDTO.setSubject("deposit");
+        alipayDTO.setSubject("deposit" + deposit.getDepositSn());
         alipayDTO.setQuit_url(param.getQuitUrl());
         return alipayDTO;
     }

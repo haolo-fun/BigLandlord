@@ -35,7 +35,7 @@ public class TenantController {
 
     @PostMapping("/add")
     @ApiOperation(value = "添加租户")
-    public ResponseResult<Tenant> add(TenantParam param) {
+    public ResponseResult<Tenant> add(@RequestBody TenantParam param) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
 
@@ -54,7 +54,7 @@ public class TenantController {
 
     @PutMapping("/update")
     @ApiOperation(value = "更新租户信息")
-    public ResponseResult<Tenant> update(TenantParam param) {
+    public ResponseResult<Tenant> update(@RequestBody TenantParam param) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
 
