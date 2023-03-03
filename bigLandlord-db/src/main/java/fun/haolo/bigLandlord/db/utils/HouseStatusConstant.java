@@ -7,4 +7,6 @@ package fun.haolo.bigLandlord.db.utils;
 public class HouseStatusConstant {
     public static final Integer LEISURE = 0;
     public static final Integer HAVE_TO_RENT = 1;
+
+    public static final Integer OVERDUE_LEASE_NOT_RETURNED = 2;
 }

@@ -11,14 +11,17 @@ import fun.haolo.bigLandlord.db.service.IHouseService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import fun.haolo.bigLandlord.db.service.ITenantService;
 import fun.haolo.bigLandlord.db.service.IUserService;
+import fun.haolo.bigLandlord.db.utils.HouseStatusConstant;
 import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
 import fun.haolo.bigLandlord.db.vo.HouseVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -36,6 +39,9 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
 
     @Autowired
     private ITenantService tenantService;
+
+    @Autowired
+    private IHouseService houseService;
 
     @Override
     public House add(HouseParam param, String username) {
@@ -129,6 +135,30 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
             list.add(houseOptionsVO);
         }
         return list;
+    }
+
+    @Override
+    public List<House> getNeedPayHouse() {
+        QueryWrapper<House> wrapper = new QueryWrapper<>();
+        wrapper.eq("status", HouseStatusConstant.HAVE_TO_RENT);
+        LocalDate now = LocalDate.now();
+        int dayOfMonth = now.getDayOfMonth();
+        // 筛选数据
+        return list(wrapper).stream()
+                .filter(house -> {
+                    // 判断是否已到期
+                    boolean before = house.getDueDate().isBefore(now);
+                    if (before) {
+                        // 顺便更新到期house状态
+                        house.setStatus(HouseStatusConstant.OVERDUE_LEASE_NOT_RETURNED);
+                        houseService.updateById(house);
+                    }
+                    // 将未到期的数据筛选出来
+                    return !before;
+                })
+                // 筛选需要生成月结租单的数据
+                .filter(house -> house.getDueDate().getDayOfMonth() == dayOfMonth)
+                .collect(Collectors.toList());
     }
 
     private HouseVO house2VO(QueryWrapper<House> wrapper, long current, long size) {

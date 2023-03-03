@@ -6,6 +6,7 @@ import fun.haolo.bigLandlord.db.param.HouseParam;
 import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
 import fun.haolo.bigLandlord.db.vo.HouseVO;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -37,4 +38,10 @@ public interface IHouseService extends IService<House> {
     String getAddressById(Long id);
 
     List<HouseOptionsVO> getHouseOptions(String username, String address);
+
+    /**
+     * 获取需要月结的房屋信息
+     * @return List<House> 房屋列表
+     */
+    List<House> getNeedPayHouse();
 }
