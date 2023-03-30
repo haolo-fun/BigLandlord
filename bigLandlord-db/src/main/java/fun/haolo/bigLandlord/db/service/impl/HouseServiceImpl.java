@@ -3,21 +3,28 @@ package fun.haolo.bigLandlord.db.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import fun.haolo.bigLandlord.db.dto.HouseDTO;
+import fun.haolo.bigLandlord.db.dto.SurrenderDTO;
 import fun.haolo.bigLandlord.db.entity.House;
+import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
 import fun.haolo.bigLandlord.db.mapper.HouseMapper;
 import fun.haolo.bigLandlord.db.param.HouseParam;
 import fun.haolo.bigLandlord.db.service.IHouseService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import fun.haolo.bigLandlord.db.service.IOrderService;
 import fun.haolo.bigLandlord.db.service.ITenantService;
 import fun.haolo.bigLandlord.db.service.IUserService;
 import fun.haolo.bigLandlord.db.utils.HouseStatusConstant;
+import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
+import fun.haolo.bigLandlord.db.utils.SNUtil;
 import fun.haolo.bigLandlord.db.vo.HouseOptionsVO;
 import fun.haolo.bigLandlord.db.vo.HouseVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +48,10 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
     private ITenantService tenantService;
 
     @Autowired
-    private IHouseService houseService;
+    private IOrderService orderService;
+
+    @Autowired
+    private SNUtil snUtil;
 
     @Override
     public House add(HouseParam param, String username) {
@@ -138,6 +148,13 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
     }
 
     @Override
+    public House getByTenantId(Long tenantId) {
+        QueryWrapper<House> wrapper = new QueryWrapper<>();
+        wrapper.eq("tenant_id", tenantId);
+        return getOne(wrapper);
+    }
+
+    @Override
     public List<House> getNeedPayHouse() {
         QueryWrapper<House> wrapper = new QueryWrapper<>();
         wrapper.eq("status", HouseStatusConstant.HAVE_TO_RENT);
@@ -151,7 +168,7 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                     if (before) {
                         // 顺便更新到期house状态
                         house.setStatus(HouseStatusConstant.OVERDUE_LEASE_NOT_RETURNED);
-                        houseService.updateById(house);
+                        updateById(house);
                     }
                     // 将未到期的数据筛选出来
                     return !before;
@@ -159,6 +176,40 @@ public class HouseServiceImpl extends ServiceImpl<HouseMapper, House> implements
                 // 筛选需要生成月结租单的数据
                 .filter(house -> house.getDueDate().getDayOfMonth() == dayOfMonth)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Long getNeedRefundDepositId(Long tenantId) {
+        return getBaseMapper().getNeedRefundDepositId(tenantId);
+    }
+
+    @Override
+    public SurrenderDTO getNeedRefundDepositAndOrderId(Long tenantId) {
+        return getBaseMapper().getNeedRefundDepositAndOrderId(tenantId);
+    }
+
+    @Override
+    @Transactional
+    public void renewTheLease(Long id, short count, String username) {
+        House house = getById(id);
+        Long userId = userService.getUserIdByUsername(username);
+        if (!house.getUserId().equals(userId)) throw new UnauthorizedException("这不是你的房子，无法完成此操作");
+
+        // 构建order
+        Order order = new Order();
+        order.setUserId(house.getUserId());
+        order.setTenantId(house.getTenantId());
+        order.setHouseId(house.getId());
+        order.setOrderSn(snUtil.generateOrderSn());
+        order.setCount(count);
+        order.setOrderStatus(OrderStatusConstant.NOT_ISSUED);
+        order.setPrice(house.getPrice().multiply(new BigDecimal(count))); // 价格 等于 房租*租期
+        orderService.save(order);
+
+        house.setStatus(HouseStatusConstant.HAVE_TO_RENT);
+        house.setDueDate(house.getDueDate().plusMonths(count));
+
+        updateById(house);
     }
 
     private HouseVO house2VO(QueryWrapper<House> wrapper, long current, long size) {

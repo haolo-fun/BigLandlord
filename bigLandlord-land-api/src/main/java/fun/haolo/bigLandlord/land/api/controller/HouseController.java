@@ -1,6 +1,7 @@
 package fun.haolo.bigLandlord.land.api.controller;
 
 import fun.haolo.bigLandlord.core.api.ResponseResult;
+import fun.haolo.bigLandlord.db.dto.SurrenderDTO;
 import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.param.HouseParam;
 import fun.haolo.bigLandlord.db.service.IHouseService;
@@ -106,5 +107,25 @@ public class HouseController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<HouseOptionsVO> houseOptions = houseService.getHouseOptions(userDetails.getUsername(), address);
         return ResponseResult.success(houseOptions);
+    }
+
+    @GetMapping("/refund/rented/{tenantId}")
+    @ApiOperation(value = "获取退款相应押金单和租单")
+    public ResponseResult<SurrenderDTO> getDepositSn(@PathVariable Long tenantId) {
+        return ResponseResult.success(houseService.getNeedRefundDepositAndOrderId(tenantId));
+    }
+
+    @GetMapping("/refund/overdue/{tenantId}")
+    @ApiOperation(value = "获取退款相应押金单")
+    public ResponseResult<Long> getDepositSnAndOrderSn(@PathVariable Long tenantId) {
+        return ResponseResult.success(houseService.getNeedRefundDepositId(tenantId));
+    }
+
+    @PutMapping("/renew/{houseId}/{month}")
+    @ApiOperation(value = "续租")
+    public ResponseResult<Object> renew(@PathVariable Long houseId, @PathVariable short month) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        houseService.renewTheLease(houseId, month, userDetails.getUsername());
+        return ResponseResult.success();
     }
 }

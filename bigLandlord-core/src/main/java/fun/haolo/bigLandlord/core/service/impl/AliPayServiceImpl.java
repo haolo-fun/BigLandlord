@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.core.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.alipay.api.AlipayApiException;
@@ -17,9 +18,9 @@ import fun.haolo.bigLandlord.db.entity.Deposit;
 import fun.haolo.bigLandlord.db.entity.House;
 import fun.haolo.bigLandlord.db.entity.Order;
 import fun.haolo.bigLandlord.db.exception.UnauthorizedException;
-import fun.haolo.bigLandlord.db.param.PaymentParam;
 import fun.haolo.bigLandlord.db.service.*;
 import fun.haolo.bigLandlord.db.utils.DepositStatusConstant;
+import fun.haolo.bigLandlord.db.utils.HouseStatusConstant;
 import fun.haolo.bigLandlord.db.utils.OrderStatusConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +41,8 @@ import java.util.Map;
  */
 @Service
 public class AliPayServiceImpl implements AliPayService {
+
+    // todo 加锁
 
     @Autowired
     private IDepositService depositService;
@@ -192,12 +194,23 @@ public class AliPayServiceImpl implements AliPayService {
         Long userID = userService.getUserIdByUsername(username);
         Deposit deposit = depositService.getBySn(depositSn);
         if (!userID.equals(deposit.getUserId())) throw new UnauthorizedException("您无权操作此退款");
-        if (deposit.getPayId() == null) throw new RuntimeException("未付款怎么退款呢？");
+//        if (deposit.getPayId() == null) throw new RuntimeException("未付款怎么退款呢？");
         if (new BigDecimal(refund_amount).compareTo(deposit.getDeposit()) > 0) throw new RuntimeException("退款金额大于支付金额");
 
         // 更新状态
         deposit.setStatus(DepositStatusConstant.REFUND);
         depositService.updateById(deposit);
+
+        // 更新房屋状态
+        House house = houseService.getByTenantId(deposit.getTenantId());
+        if (!house.getDeposit().equals(deposit.getDeposit())) throw new RuntimeException("房屋信息与押金单不一致，请联系管理员");
+        house.setStatus(HouseStatusConstant.LEISURE);
+        houseService.updateById(house);
+
+        if (deposit.getPayId() == null) return;
+
+        // 退款流水生成以及更新财务信息
+        runningTallyService.saveDeposit(userID, depositSn, "-" + refund_amount);
 
         // 退款
         alipayTradeRefund(refund_amount, deposit.getPayId());
@@ -209,15 +222,20 @@ public class AliPayServiceImpl implements AliPayService {
         Long userID = userService.getUserIdByUsername(username);
         Order order = orderService.getOrderBySn(orderSn);
         if (!userID.equals(order.getUserId())) throw new UnauthorizedException("您无权操作此退款");
-        if (order.getPayId().isEmpty()) throw new RuntimeException("未付款怎么退款呢？");
+//        if (order.getPayId().isEmpty()) throw new RuntimeException("未付款怎么退款呢？");
         if (new BigDecimal(refund_amount).compareTo(order.getPrice()) > 0) throw new RuntimeException("退款金额大于支付金额");
 
         // 更新状态
         order.setOrderStatus(OrderStatusConstant.REFUND);
         orderService.updateById(order);
-        House house = houseService.getById(order.getHouseId());
-        house.setStatus(0);
-        houseService.updateById(house);
+//        House house = houseService.getById(order.getHouseId());
+//        house.setStatus(HouseStatusConstant.LEISURE);
+//        houseService.updateById(house);
+
+        if (order.getPayId() == null) return;
+
+        // 退款流水生成以及更新财务信息
+        runningTallyService.saveRent(userID, orderSn, "-" + refund_amount);
 
         // 退款
         alipayTradeRefund(refund_amount, order.getPayId());
@@ -297,8 +315,9 @@ public class AliPayServiceImpl implements AliPayService {
                 DateTimeFormatter timeDtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 //字符串转LocalDateTime
                 LocalDateTime payTime = LocalDateTime.parse(gmt_payment, timeDtf);
-                if (subject.equals("deposit")) {
+                if (StrUtil.sub(subject, 0, 7).equals("deposit")) {
                     // 押金逻辑
+                    log.info("deposit handle");
                     Deposit depositBySn = depositService.getBySn(out_trade_no);
                     Deposit deposit = new Deposit();
                     deposit.setId(depositBySn.getId());
@@ -313,6 +332,7 @@ public class AliPayServiceImpl implements AliPayService {
                     log.info("支付宝异步通知：房屋押金" + out_trade_no + ",交易号" + trade_no + "，于" + gmt_payment + "完成支付");
                 } else {
                     // 租单逻辑
+                    log.info("order handle");
                     Order order = new Order();
                     Order orderBySn = orderService.getOrderBySn(out_trade_no);
                     order.setId(orderBySn.getId());

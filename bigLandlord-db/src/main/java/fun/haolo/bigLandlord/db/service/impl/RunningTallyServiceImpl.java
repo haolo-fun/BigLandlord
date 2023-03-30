@@ -108,9 +108,8 @@ public class RunningTallyServiceImpl extends ServiceImpl<RunningTallyMapper, Run
         RunningTally runningTally = new RunningTally();
         // 获取最后一条记录得到旧余额
         QueryWrapper<RunningTally> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId);
-        wrapper.orderByAsc("id");
-        RunningTally old = getOne(wrapper);
+        List<RunningTallyDTO> list = getTen(userService.getById(userId).getUsername());
+        RunningTallyDTO old = list.get(0);
         // 根据旧余额计算当前余额
         BigDecimal newBalance = priceBigDecimal.add(old == null ? new BigDecimal(0) : old.getBalance());
         // 添加至流水
@@ -123,18 +122,20 @@ public class RunningTallyServiceImpl extends ServiceImpl<RunningTallyMapper, Run
         runningTally.setForm(Dignum ? "out" : "in");
         save(runningTally);
         // 更新finance数据
+
+        // todo 待验证
         Finance finance = financeService.getById(userId);
         if (type == 0){
             if (Dignum) {
                 finance.setDeposit(finance.getDeposit().add(priceBigDecimal));
             } else {
-                finance.setDeposit(finance.getDeposit().subtract(priceBigDecimal));
+                finance.setDeposit(finance.getDeposit().add(priceBigDecimal));
             }
         }else {
             if (Dignum) {
                 finance.setRent(finance.getRent().add(priceBigDecimal));
             } else {
-                finance.setRent(finance.getRent().subtract(priceBigDecimal));
+                finance.setRent(finance.getRent().add(priceBigDecimal));
             }
         }
         financeService.updateById(finance);

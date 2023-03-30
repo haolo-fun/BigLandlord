@@ -55,8 +55,23 @@ public interface AliPayService {
      */
     AlipayTradeRefundResponse alipayTradeRefund(String refund_amount, String trade_no) throws AlipayApiException;
 
+    /**
+     * 押金退款
+     * @param username 用户名
+     * @param depositSn 押金单号
+     * @param refund_amount 退款金额
+     * @throws AlipayApiException
+     */
     void depositRefund(String username, String depositSn, String refund_amount) throws AlipayApiException;
 
+
+    /**
+     * 租金退款
+     * @param username 用户名
+     * @param OrderSn 租单号
+     * @param refund_amount 退款金额
+     * @throws AlipayApiException
+     */
     void orderRefund(String username, String OrderSn, String refund_amount) throws AlipayApiException;
 
     /**

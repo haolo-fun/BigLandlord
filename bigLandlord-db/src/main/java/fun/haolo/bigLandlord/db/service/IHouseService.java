@@ -1,5 +1,6 @@
 package fun.haolo.bigLandlord.db.service;
 
+import fun.haolo.bigLandlord.db.dto.SurrenderDTO;
 import fun.haolo.bigLandlord.db.entity.House;
 import com.baomidou.mybatisplus.extension.service.IService;
 import fun.haolo.bigLandlord.db.param.HouseParam;
@@ -39,9 +40,17 @@ public interface IHouseService extends IService<House> {
 
     List<HouseOptionsVO> getHouseOptions(String username, String address);
 
+    House getByTenantId(Long tenantId);
+
     /**
      * 获取需要月结的房屋信息
      * @return List<House> 房屋列表
      */
     List<House> getNeedPayHouse();
+
+    Long getNeedRefundDepositId(Long tenantId);
+
+    SurrenderDTO getNeedRefundDepositAndOrderId(Long tenantId);
+
+    void renewTheLease(Long id, short count, String username);
 }

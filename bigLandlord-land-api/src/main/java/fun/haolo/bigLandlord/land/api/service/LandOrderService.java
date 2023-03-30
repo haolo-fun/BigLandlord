@@ -70,7 +70,7 @@ public class LandOrderService {
         order.setHouseId(houseId);
         order.setOrderSn(snUtil.generateOrderSn());
         order.setCount(count);
-        order.setOrderStatus(OrderStatusConstant.NOT_ISSUED);
+        order.setOrderStatus(OrderStatusConstant.HAS_BEEN_ISSUED);
         order.setPrice(house.getPrice().multiply(new BigDecimal(count))); // 价格 等于 房租*租期
 
         // 添加押金单

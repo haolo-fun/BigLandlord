@@ -51,8 +51,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Page<Order> orderPage = getBaseMapper().selectPage(new Page<>(current, size), queryWrapper);
         List<Order> orderList = orderPage.getRecords();
         List<OrderDTO> orderDTOList = new ArrayList<>();
-        OrderDTO orderDTO = new OrderDTO();
         for (Order order : orderList) {
+            OrderDTO orderDTO = new OrderDTO();
             orderDTO.setOrderSn(order.getOrderSn());
             orderDTO.setHouseId(order.getHouseId());
             orderDTO.setAddress(houseService.getAddressById(order.getHouseId()));

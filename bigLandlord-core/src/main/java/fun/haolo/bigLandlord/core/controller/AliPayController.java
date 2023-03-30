@@ -86,7 +86,7 @@ public class AliPayController {
     }
 
     @PutMapping("/tradeRefund/order/{refund_amount}/{order_sn}")
-    @ApiOperation(value = "押金退款")
+    @ApiOperation(value = "租单退款")
     public ResponseResult<Object> orderRefund(@PathVariable String refund_amount, @PathVariable String order_sn) throws AlipayApiException {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         aliPayService.orderRefund(userDetails.getUsername(), order_sn, refund_amount);

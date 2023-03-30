@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fun.haolo.bigLandlord.db.mapper.HouseMapper">
+
+    <select id="getNeedRefundDepositId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT d.`deposit_sn`
+        FROM `big_landlord`.`bl_house` h
+                 INNER JOIN `big_landlord`.`bl_deposit` d
+        WHERE h.`tenant_id` = d.`tenant_id`
+          AND h.`deleted` = 0
+          AND d.`deleted` = 0
+          AND h.`status` = 2
+          AND h.`tenant_id` = #{tenantId}
+    </select>
+
+    <select id="getNeedRefundDepositAndOrderId" parameterType="java.lang.Long"
+            resultType="fun.haolo.bigLandlord.db.dto.SurrenderDTO">
+        SELECT d.`deposit_sn` depositSn,
+               o.`order_sn`   orderSn
+        FROM `big_landlord`.`bl_house` h
+                 INNER JOIN `big_landlord`.`bl_deposit` d ON h.`tenant_id` = d.`tenant_id`
+                 INNER JOIN `big_landlord`.`bl_order` o ON h.`tenant_id` = o.`tenant_id`
+        WHERE h.`tenant_id` = #{tenantId}
+          AND h.`deleted` = 0
+          AND d.`deleted` = 0
+          AND h.`status` = 1
+        ORDER BY o.id DESC LIMIT 0,1
+    </select>
+
+</mapper>
