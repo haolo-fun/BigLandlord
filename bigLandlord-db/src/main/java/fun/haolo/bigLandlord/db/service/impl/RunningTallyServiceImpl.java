@@ -123,7 +123,6 @@ public class RunningTallyServiceImpl extends ServiceImpl<RunningTallyMapper, Run
         save(runningTally);
         // 更新finance数据
 
-        // todo 待验证
         Finance finance = financeService.getById(userId);
         if (type == 0){
             if (Dignum) {

@@ -9,6 +9,7 @@ import fun.haolo.bigLandlord.db.entity.User;
 import fun.haolo.bigLandlord.db.entity.UserRoleRelation;
 import fun.haolo.bigLandlord.db.mapper.UserMapper;
 import fun.haolo.bigLandlord.db.param.UserParam;
+import fun.haolo.bigLandlord.db.service.IFinanceService;
 import fun.haolo.bigLandlord.db.service.IRoleService;
 import fun.haolo.bigLandlord.db.service.IUserRoleRelationService;
 import fun.haolo.bigLandlord.db.service.IUserService;
@@ -40,6 +41,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private IFinanceService financeService;
 
     @Override
     public User getUserByUsername(String username) {
@@ -114,7 +118,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    @Transactional
     public void addUserByAdmin(UserParam userParam) {
         // 查询是否有相同用户名的用户
         User userByUsername = getUserByUsername(userParam.getUsername());
@@ -127,7 +130,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setEmail(userParam.getEmail());
         user.setNickName(userParam.getNickName());
         save(user);
-        // todo 添加角色信息
+        //角色初始化
+        Long userId = getUserIdByUsername(user.getUsername());
+        UserRoleRelation userRoleRelation = new UserRoleRelation();
+        userRoleRelation.setUserId(userId);
+        userRoleRelation.setRoleId(2);
+        userRoleRelationService.save(userRoleRelation);
+        //财务初始化
+        financeService.init(userId);
+        //密码初始化
+        resetPasswordByAdmin(user.getUsername());
     }
 
     @Override
@@ -138,6 +150,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setMobile(userParam.getMobile());
         user.setEmail(userParam.getEmail());
         user.setNickName(userParam.getNickName());
+        user.setUpdateTime(null);
         updateById(user);
     }
 

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import fun.haolo.bigLandlord.db.service.IRunningTallyService;
 import fun.haolo.bigLandlord.db.service.IUserService;
 import fun.haolo.bigLandlord.db.vo.FinanceVO;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,14 +50,20 @@ public class FinanceServiceImpl extends ServiceImpl<FinanceMapper, Finance> impl
         finance.setWithdrawDeposit(new BigDecimal(0));
         finance.setWithdrawRent(new BigDecimal(0));
         if (!save(finance)) throw new RuntimeException("finance can not be init");
+        RunningTally runningTally = getRunningTally(userId, 0);
+        if (!runningTallyService.save(runningTally)) throw new RuntimeException("finance can not be init");
+        RunningTally runningTally1 = getRunningTally(userId, 1);
+        if (!runningTallyService.save(runningTally1)) throw new RuntimeException("finance can not be init");
+    }
+
+    @NotNull
+    private static RunningTally getRunningTally(Long userId, Integer type) {
         RunningTally runningTally = new RunningTally();
         runningTally.setUserId(userId);
-        runningTally.setType(0);
+        runningTally.setType(type);
         runningTally.setPrice(new BigDecimal(0));
         runningTally.setBalance(new BigDecimal(0));
         runningTally.setForm("in");
-        if (!runningTallyService.save(runningTally)) throw new RuntimeException("finance can not be init");
-        runningTally.setType(1);
-        if (!runningTallyService.save(runningTally)) throw new RuntimeException("finance can not be init");
+        return runningTally;
     }
 }
