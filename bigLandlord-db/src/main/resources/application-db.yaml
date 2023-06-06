@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/big_landlord?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: 123456
+    hikari:
+      max-lifetime: 50000
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 123456
+    database: 8
+    timeout: 5000ms
+
+mybatis-plus:
+  #  configuration:
+  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-package: fun.haolo.bigLandlord.db.mapper
+  mapper-locations: classpath*:xml/*Mapper.xml
+
+jwt:
+  # jwt密钥，可自定义
+  secret: bigLandlord
+  # 过期时间
+  expiration: 86400 # 24h

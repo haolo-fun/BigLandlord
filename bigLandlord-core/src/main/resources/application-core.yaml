@@ -1,0 +1,32 @@
+jwt:
+  tokenHeader: X-Token
+
+aliyun:
+  sms:
+    # 阿里云短信服务
+    accessKeyId:
+    accessKeySecret:
+  pay:
+    # 在支付宝创建的应用的id
+    app_id:
+    # 商户私钥，您的PKCS8格式RSA2私钥
+    merchant_private_key:
+    # 支付宝公钥
+    alipay_public_key:
+    # 绑定的商家账号
+    sellerId:
+    # 服务器[异步通知]页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
+    notify_url: https://《Your IP or Domain》/pay/notify
+    # 同步通知，支付成功，一般跳转到成功页
+    # return_url:
+    # 签名方式
+    sign_type: RSA2
+    # 字符编码格式
+    charset: UTF8
+    # 超时时间，可空
+    time_out: 30m
+    # 支付宝网关: https://openapi.alipaydev.com/gateway.do
+    gatewayUrl: https://openapi.alipaydev.com/gateway.do
+
+knife4j:
+  enable: true
