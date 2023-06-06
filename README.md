@@ -118,4 +118,5 @@ spring:
 ![编译打包](https://raw.githubusercontent.com/haolo-fun/ImageHosting/main/%20BigLandlord/202306061155365.png)
 
 打包完成后，在`/bigLandlord-starter/target/`下找到`bigLandlord-starter-0.0.1-SNAPSHOT.jar`文件。
+
 执行`java -jar bigLandlord-starter-0.0.1-SNAPSHOT.jar`即可。
